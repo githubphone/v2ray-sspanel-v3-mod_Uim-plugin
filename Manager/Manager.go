@@ -19,7 +19,6 @@ type Manager struct {
 	UserToBeMoved        map[string]model.UserModel
 	UserToBeAdd          map[string]model.UserModel
 	Users                map[string]model.UserModel
-	AlterId              uint32
 	MainAddress          string
 	MainListenPort       uint16
 	NodeID               uint
