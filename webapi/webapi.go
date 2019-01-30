@@ -6,6 +6,7 @@ import (
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/model"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/utility"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -164,6 +165,14 @@ func (api *Webapi) GetALLUsers(info *model.NodeInfo) (*AllUsers, error) {
 	for index := range response.Data {
 		key := prifix + response.Data[index].Email
 		response.Data[index].PrefixedId = key
+		if info.Server["alterid"] == "" {
+			response.Data[index].AlterId = 0
+		} else {
+			alterid, err := strconv.ParseUint(info.Server["alterid"].(string), 10, 0)
+			if err == nil {
+				response.Data[index].AlterId = uint32(alterid)
+			}
+		}
 		allusers.Data[key] = response.Data[index]
 	}
 	return &allusers, nil
