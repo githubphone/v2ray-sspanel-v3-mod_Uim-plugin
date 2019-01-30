@@ -118,7 +118,7 @@ func (manager *Manager) UpdateMainAddressAndProt(node_info *model.NodeInfo) {
 			manager.MainAddress = "127.0.0.1"
 			manager.MainListenPort = 10550
 			if node_info.Server["inside_port"] != "" {
-				port, err := strconv.ParseUint(node_info.Server["port"].(string), 10, 0)
+				port, err := strconv.ParseUint(node_info.Server["inside_port"].(string), 10, 0)
 				if err == nil {
 					manager.MainListenPort = uint16(port)
 				}
