@@ -46,7 +46,7 @@ var id2string = map[uint]string{
 var maps = map[string]interface{}{
 	"server_address": "",
 	"port":           "",
-	"alterid":        "",
+	"alterid":        "16",
 	"protocol":       "tcp",
 	"protocol_param": "",
 	"path":           "",
@@ -166,7 +166,7 @@ func (api *Webapi) GetALLUsers(info *model.NodeInfo) (*AllUsers, error) {
 		key := prifix + response.Data[index].Email
 		response.Data[index].PrefixedId = key
 		if info.Server["alterid"] == "" {
-			response.Data[index].AlterId = 0
+			response.Data[index].AlterId = 16
 		} else {
 			alterid, err := strconv.ParseUint(info.Server["alterid"].(string), 10, 0)
 			if err == nil {
