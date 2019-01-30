@@ -16,7 +16,7 @@ COPY --from=builder /usr/bin/v2ray/v2ray /usr/bin/v2ray/
 COPY --from=builder /usr/bin/v2ray/v2ctl /usr/bin/v2ray/
 COPY --from=builder /usr/bin/v2ray/geoip.dat /usr/bin/v2ray/
 COPY --from=builder /usr/bin/v2ray/geosite.dat /usr/bin/v2ray/
-COPY --from=builder /etcr/v2ray/config.json  /etcr/v2ray/config.json
+COPY --from=builder /etc/v2ray/config.json  /etc/v2ray/config.json
 
 RUN set -ex && \
     mkdir /var/log/v2ray/ &&\
