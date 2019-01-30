@@ -1,0 +1,17 @@
+version: '2'
+
+services:
+ v2ray:
+    image: rico93/v2ray_v3:go
+    restart: always
+    network_mode: "host"
+    environment:
+      sspanel_url: "https://xxxx"
+      key: "xxxx"
+      speedtest: 6
+      node_id: 10
+      api_port: 2333
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
