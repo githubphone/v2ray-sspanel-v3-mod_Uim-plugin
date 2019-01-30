@@ -129,7 +129,7 @@ curl https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/ma
 ~~~
 curl -L -o ./go.sh https://raw.githubusercontent.com/rico93/v2ray-core/4.12.0_ips/release/install-release.sh 
 
-bash /tmp/go.sh -f --version 4.12.0 --panelurl xxx --panelkey xxx --nodeid xxx
+bash ./go.sh -f --version 4.12.0 --panelurl xxx --panelkey xxx --nodeid xxx
 ~~~
 
 
