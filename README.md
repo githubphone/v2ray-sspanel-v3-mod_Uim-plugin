@@ -129,5 +129,117 @@ curl https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/ma
 ~~~
 curl -L -o ./go.sh https://raw.githubusercontent.com/rico93/v2ray-core/4.12.0_ips/release/install-release.sh 
 
-bash /tmp/go.sh -f --version 4.12.0 --panelurl xxx --panelkey xxx --nodeid
+bash /tmp/go.sh -f --version 4.12.0 --panelurl xxx --panelkey xxx --nodeid xxx
+~~~
+
+
+Example 
+
+~~~
+{
+  "api": {
+    "services": [
+      "HandlerService",
+      "LoggerService",
+      "StatsService"
+    ],
+    "tag": "api"
+  },
+  "inbounds": [{
+    "listen": "127.0.0.1",
+    "port": 2333,
+    "protocol": "dokodemo-door",
+    "settings": {
+      "address": "127.0.0.1"
+    },
+    "tag": "api"
+  }
+  ],
+  "log": {
+    "access": "/var/log/v2ray/access.log",
+    "error": "/var/log/v2ray/error.log",
+    "loglevel": "info"
+  },
+  "outbounds": [{
+    "protocol": "freedom",
+    "settings": {}
+  },
+    {
+      "protocol": "blackhole",
+      "settings": {},
+      "tag": "blocked"
+    }
+  ],
+  "policy": {
+    "levels": {
+      "0": {
+        "bufferSize": 10240,
+        "connIdle": 300,
+        "downlinkOnly": 5,
+        "handshake": 4,
+        "statsUserDownlink": true,
+        "statsUserUplink": true,
+        "uplinkOnly": 2
+      }
+    },
+    "system": {
+      "statsInboundDownlink": false,
+      "statsInboundUplink": false
+    }
+  },
+  "reverse": {},
+  "routing": {
+    "settings": {
+      "rules": [{
+        "ip": [
+          "0.0.0.0/8",
+          "10.0.0.0/8",
+          "100.64.0.0/10",
+          "127.0.0.0/8",
+          "169.254.0.0/16",
+          "172.16.0.0/12",
+          "192.0.0.0/24",
+          "192.0.2.0/24",
+          "192.168.0.0/16",
+          "198.18.0.0/15",
+          "198.51.100.0/24",
+          "203.0.113.0/24",
+          "::1/128",
+          "fc00::/7",
+          "fe80::/10"
+        ],
+        "outboundTag": "blocked",
+        "protocol": [
+          "bittorrent"
+        ],
+        "type": "field"
+      },
+        {
+          "inboundTag": [
+            "api"
+          ],
+          "outboundTag": "api",
+          "type": "field"
+        },
+        {
+          "domain": [
+            "regexp:(api|ps|sv|offnavi|newvector|ulog\\.imap|newloc)(\\.map|)\\.(baidu|n\\.shifen)\\.com",
+            "regexp:(.+\\.|^)(360|so)\\.(cn|com)",
+            "regexp:(.?)(xunlei|sandai|Thunder|XLLiveUD)(.)"
+          ],
+          "outboundTag": "blocked",
+          "type": "field"
+        }
+      ]
+    },
+    "strategy": "rules"
+  },
+  "stats": {},
+  "sspanel": {
+    "nodeId": 20,
+    "checkRate": 60,
+    "panelUrl": "xxxx",
+    "panelKey": "xxxx"
+  }
+}
 ~~~
