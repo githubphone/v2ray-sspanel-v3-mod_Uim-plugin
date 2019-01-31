@@ -120,9 +120,9 @@ chmod +x tcp.sh && ./tcp.sh
 修改了官方安装脚本
 用脚本指定面板信息，请务必删除原有的config.json, 否则不会更新config.json
 ~~~
-curl -L -o ./go.sh https://raw.githubusercontent.com/rico93/v2ray-core/4.12.0_ips/release/install-release.sh 
+bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/4.12.0_ips/release/install-release.sh) -f --version 4.12.0 --panelurl https://xxxx --panelkey xxxx--nodeid 21
 
-bash ./go.sh -f --version 4.12.0 --panelurl xxx --panelkey xxx --nodeid xxx
+
 ~~~
 
 
