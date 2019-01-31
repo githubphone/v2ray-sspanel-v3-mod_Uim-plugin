@@ -116,7 +116,7 @@ func (api *Webapi) GetNodeInfo(nodeid uint) (*NodeinfoResponse, error) {
 		}
 		response.Data.Server = maps
 	}
-
+	response.Data.NodeID =nodeid
 	return &response, nil
 }
 
