@@ -17,11 +17,6 @@
     "tag": "api"
   }
   ],
-  "log": {
-    "access": "/var/log/v2ray/access.log",
-    "error": "/var/log/v2ray/error.log",
-    "loglevel": "info"
-  },
   "outbounds": [{
     "protocol": "freedom",
     "settings": {}
@@ -98,9 +93,9 @@
   },
   "stats": {},
   "sspanel": {
-    "nodeId": 20,
+    "nodeId": 123456,
     "checkRate": 60,
-    "panelUrl": "xxxx",
-    "panelKey": "xxxx"
+    "panelUrl": "https://google.com",
+    "panelKey": "55fUxDGFzH3n"
   }
 }

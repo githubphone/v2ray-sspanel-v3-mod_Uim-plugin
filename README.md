@@ -117,6 +117,23 @@ chmod +x tcp.sh && ./tcp.sh
 
 ### [推荐] 脚本部署
 
+Docker-compose 安装
+
+v2ray docker error log 得进入容器获得
+
+~~~
+docker ps 获得docker go的hash tag
+docker exec -it hash_tag sh 进入
+cat error.log
+~~~
+
+~~~
+mkdir v2ray-agent  &&  \
+cd v2ray-agent && \
+curl https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/install.sh -o install.sh && \
+chmod +x install.sh && \
+bash install.sh
+~~~
 修改了官方安装脚本
 用脚本指定面板信息，请务必删除原有的config.json, 否则不会更新config.json
 ~~~

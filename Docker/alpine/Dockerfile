@@ -19,16 +19,21 @@ COPY --from=builder /usr/bin/v2ray/geosite.dat /usr/bin/v2ray/
 COPY --from=builder /etc/v2ray/config.json  /etc/v2ray/config.json
 
 RUN set -ex && \
-    mkdir /var/log/v2ray/ &&\
+    apk --no-cache add ca-certificates && \
+    update-ca-certificates && \
+    apk add --update tzdata && \
+    mkdir /var/log/v2ray/ && \
     chmod +x /usr/bin/v2ray/v2ctl && \
-    chmod +x /usr/bin/v2ray/v2ray
+    chmod +x /usr/bin/v2ray/v2ray && \
+    rm -rf /var/cache/apk/*
 
+ENV TZ=Asia/Shanghai
 ENV PATH /usr/bin/v2ray:$PATH
 VOLUME  /var/log/v2ray/
 WORKDIR /var/log/v2ray/
 
-CMD     sed -i "s|\"port\": 2333,|\"port\": ${api_port},|"  /etc/v2ray/config.json &&\
-        sed -i "s|"https://google.com"|"${sspanel_url}"|g" "/etc/v2ray/config.json" && \
-        sed -i "s/"55fUxDGFzH3n"/"${key}"/g" "/etc/v2ray/config.json" && \
+CMD     sed -i "s|\"port\": 2333,|\"port\": ${api_port},|"  "/etc/v2ray/config.json" &&\
+        sed -i "s|\"https://google.com\"|\"${sspanel_url}\"|g" "/etc/v2ray/config.json" && \
+        sed -i "s/\"55fUxDGFzH3n\"/\"${key}\"/g" "/etc/v2ray/config.json" && \
         sed -i "s/123456/${node_id}/g" "/etc/v2ray/config.json" && \
-        (nohup v2ray -config=/etc/v2ray/config.json >/dev/null 2>&1 & )
+        v2ray -config=/etc/v2ray/config.json
