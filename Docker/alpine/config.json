@@ -17,6 +17,9 @@
     "tag": "api"
   }
   ],
+  "log": {
+    "loglevel": "info"
+  },
   "outbounds": [{
     "protocol": "freedom",
     "settings": {}

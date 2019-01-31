@@ -119,14 +119,6 @@ chmod +x tcp.sh && ./tcp.sh
 
 Docker-compose 安装
 
-v2ray docker error log 得进入容器获得
-
-~~~
-docker ps 获得docker go的hash tag
-docker exec -it hash_tag sh 进入
-cat error.log
-~~~
-
 ~~~
 mkdir v2ray-agent  &&  \
 cd v2ray-agent && \
