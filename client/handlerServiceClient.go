@@ -200,7 +200,7 @@ func (h *HandlerServiceClient) ConverSSUser(userModel model.UserModel) *protocol
 		Account: serial.ToTypedMessage(&shadowsocks.Account{
 			Password:   userModel.Passwd,
 			CipherType: CipherTypeMap[strings.ToLower(userModel.Method)],
-			Ota:        shadowsocks.Account_Enabled,
+			Ota:        shadowsocks.Account_Auto,
 		}),
 	}
 }
