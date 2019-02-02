@@ -131,17 +131,17 @@ bash install.sh
 
 第一次安装
 ~~~
-bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/4.12.0_ips/release/install-release.sh) --panelurl https://xxxx --panelkey xxxx--nodeid 21
+bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/master/release/install-release.sh) --panelurl https://xxxx --panelkey xxxx--nodeid 21
 ~~~
 后续升级
 ~~~
-bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/4.12.0_ips/release/install-release.sh)
+bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/master/release/install-release.sh)
 ~~~
 
 如果要强制安装某个版本
 
 ~~~
-bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/4.12.0_ips/release/install-release.sh) -f --version 4.12.0
+bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/master/release/install-release.sh) -f --version 4.12.0
 ~~~
 
 
