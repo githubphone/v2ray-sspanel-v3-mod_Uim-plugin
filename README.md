@@ -37,7 +37,7 @@ v2ray 后端 kcp、tcp、ws 都是多用户共用一个端口。
 
 ## 作为 V2ray 后端
 
-这里面板设置是节点类型v2ray, 普通端口。
+这里面板设置是节点类型v2ray, 普通端口。 v2ray的API接口默认是2333
 
 支持 kcp、ws、tls 由镜像 Caddy或者ngnix 提供,默认是443接口哦。或者自己调整。
 
@@ -131,7 +131,7 @@ bash install.sh
 
 第一次安装
 ~~~
-bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/master/release/install-release.sh) --panelurl https://xxxx --panelkey xxxx--nodeid 21
+bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/master/release/install-release.sh) --panelurl https://xxxx --panelkey xxxx --nodeid 21
 ~~~
 后续升级
 ~~~
