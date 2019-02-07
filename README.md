@@ -122,7 +122,7 @@ chmod +x tcp.sh && ./tcp.sh
 ~~~
 mkdir v2ray-agent  &&  \
 cd v2ray-agent && \
-curl https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/install.sh -o install.sh && \
+curl https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/master/install.sh -o install.sh && \
 chmod +x install.sh && \
 bash install.sh
 ~~~
