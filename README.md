@@ -117,7 +117,7 @@ chmod +x tcp.sh && ./tcp.sh
 
 ### [推荐] 脚本部署
 
-#### Docker-compose 安装 （目前据报告有bug，建议普通安装）
+#### Docker-compose 安装 
 这里一直保持最新版
 ~~~
 mkdir v2ray-agent  &&  \
