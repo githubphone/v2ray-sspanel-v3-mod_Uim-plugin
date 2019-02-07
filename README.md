@@ -132,14 +132,16 @@ bash install.sh
 修改了官方安装脚本
 用脚本指定面板信息，请务必删除原有的config.json, 否则不会更新config.json
 
-第一次安装
+安装（这里保持最新版本）
 ~~~
 bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/master/release/install-release.sh) --panelurl https://xxxx --panelkey xxxx --nodeid 21
 ~~~
-后续升级
+
+后续升级（如果要更新到最新版本）
 ~~~
 bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/master/release/install-release.sh)
 ~~~
+
 
 如果要强制安装某个版本
 
@@ -148,7 +150,7 @@ bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-core/master/re
 ~~~
 
 
-Example 
+config.json Example 
 
 ~~~
 {
