@@ -114,6 +114,11 @@ apt install make gcc -y
 sed -i 's#/usr/bin/gcc-4.9#/usr/bin/gcc#g' '/root/tcp.sh'
 chmod +x tcp.sh && ./tcp.sh
 ~~~
+### [可选] 增加swap
+整数是M
+~~~
+wget https://www.moerats.com/usr/shell/swap.sh && bash swap.sh
+~~~
 
 ### [推荐] 脚本部署
 
