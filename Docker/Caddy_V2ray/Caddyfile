@@ -2,7 +2,7 @@
 {
   root /srv/www
   log ./caddy.log
-  proxy {$V2RAY_PATH} localhost:{$V2RAY_PORT} {
+  proxy {$V2RAY_PATH} 127.0.0.1:{$V2RAY_PORT} {
     websocket
     header_upstream -Origin
   }
