@@ -22,7 +22,7 @@ services:
     restart: always
     environment:
       - ACME_AGREE=true
-#      if u want to use cloudflare ddns service
+#      if u want to use cloudflare (for DNS challenge authentication)
 #      - CLOUDFLARE_EMAIL=xxxxxx@out.look.com
 #      - CLOUDFLARE_API_KEY=xxxxxxx
       - V2RAY_DOMAIN=xxxx.com
