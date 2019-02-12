@@ -144,6 +144,7 @@ bash install.sh
 
 
 #### 普通安装
+##### 安装v2ray 
 修改了官方安装脚本
 用脚本指定面板信息，请务必删除原有的config.json, 否则不会更新config.json
 
@@ -272,6 +273,35 @@ config.json Example
     "checkRate": 60,
     "panelUrl": "xxxx",
     "panelKey": "xxxx"
+  }
+}
+~~~
+##### 安装caddy
+
+一键安装 caddy 和cf ddns tls插件
+
+~~
+curl https://getcaddy.com | bash -s dyndns,tls.dns.cloudflare
+~~
+
+Caddyfile 
+
+自行修改，或者设置对应环境变量
+
+~~~
+{$V2RAY_DOMAIN}:{$V2RAY_OUTSIDE_PORT}
+{
+  root /srv/www
+  log ./caddy.log
+  proxy {$V2RAY_PATH} 127.0.0.1:{$V2RAY_PORT} {
+    websocket
+    header_upstream -Origin
+  }
+  gzip
+  tls {$V2RAY_EMAIL} {
+    protocols tls1.0 tls1.2
+    # remove comment if u want to use cloudflare ddns
+    # dns cloudflare
   }
 }
 ~~~
