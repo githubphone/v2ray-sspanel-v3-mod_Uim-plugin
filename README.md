@@ -47,7 +47,7 @@ v2ray 后端 kcp、tcp、ws 都是多用户共用一个端口。
 没有CDN的域名或者ip;端口（外部链接的);AlterId;协议层;;额外参数(path=/v2ray|host=xxxx.win|inside_port=10550这个端口内部监听))
 
 // ws 示例
-xxxxx.com;443;16;ws;;path=/v2ray|host=oxxxx.com|inside_port=10550
+xxxxx.com;10550;16;ws;;path=/v2ray|host=oxxxx.com
 
 // ws + tls (Caddy 提供)
 xxxxx.com;443;16;tls;ws;path=/v2ray|host=oxxxx.com|inside_port=10550
@@ -55,7 +55,7 @@ xxxxx.com;443;16;tls;ws;path=/v2ray|host=oxxxx.com|inside_port=10550
 
 
 // nat🐔 ws 示例
-xxxxx.com;443;16;ws;;path=/v2ray|host=oxxxx.com|inside_port=10550|outside_port=11120
+xxxxx.com;11120;16;ws;;path=/v2ray|host=oxxxx.com
 
 // nat🐔 ws + tls (Caddy 提供)
 xxxxx.com;443;16;tls;ws;path=/v2ray|host=oxxxx.com|inside_port=10550|outside_port=11120
