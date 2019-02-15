@@ -212,7 +212,6 @@ config.json Example
   "policy": {
     "levels": {
       "0": {
-        "bufferSize": 10240,
         "connIdle": 300,
         "downlinkOnly": 5,
         "handshake": 4,
