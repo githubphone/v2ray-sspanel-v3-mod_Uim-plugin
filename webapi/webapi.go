@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/imroc/req"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/model"
+	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/speedtest"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/utility"
 	"log"
 	"strconv"
@@ -116,7 +117,7 @@ func (api *Webapi) GetNodeInfo(nodeid uint) (*NodeinfoResponse, error) {
 		}
 		response.Data.Server = maps
 	}
-	response.Data.NodeID =nodeid
+	response.Data.NodeID = nodeid
 	return &response, nil
 }
 
@@ -234,7 +235,28 @@ func (api *Webapi) UpLoadUserTraffics(nodeid uint, trafficLog []model.UserTraffi
 	}
 	return true
 }
+func (api *Webapi) UploadSpeedTest(nodeid uint, speedresult []speedtest.Speedresult) bool {
+	var postresponse PostResponse
+	params := map[string]interface{}{
+		"node_id": nodeid,
+	}
 
+	data := map[string]interface{}{
+		"data": speedresult,
+	}
+	r, err := api.Post("func/speedtest", params, data)
+	if err != nil {
+		return false
+	} else {
+		err = r.ToJSON(&postresponse)
+		if err != nil {
+			return false
+		} else if postresponse.Ret != 1 {
+			log.Fatal(postresponse.Data)
+		}
+	}
+	return true
+}
 func (api *Webapi) UpLoadOnlineIps(nodeid uint, onlineIPS []model.UserOnLineIP) bool {
 	var postresponse PostResponse
 	params := map[string]interface{}{

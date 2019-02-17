@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"v2ray.com/core/common/errors"
 	"v2ray.com/core/common/platform"
-	"v2ray.com/core/infra/conf"
+	"v2ray.com/ext/tools/conf"
 )
 
 //var (
@@ -34,11 +34,12 @@ var (
 )
 
 type Config struct {
-	NodeID      uint   `json:"nodeId"`
-	CheckRate   int    `json:"checkRate"`
-	PanelUrl    string `json:"panelUrl"`
-	PanelKey    string `json:"panelKey"`
-	V2rayConfig *conf.Config
+	NodeID             uint   `json:"nodeId"`
+	CheckRate          int    `json:"checkRate"`
+	PanelUrl           string `json:"panelUrl"`
+	PanelKey           string `json:"panelKey"`
+	SpeedTestCheckRate int    `json:"speedTestCheckrate"`
+	V2rayConfig        *conf.Config
 }
 
 func GetConfig() (*Config, error) {

@@ -6,6 +6,7 @@ import (
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/client"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/config"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/model"
+	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/speedtest"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/webapi"
 	"github.com/robfig/cron"
 	"google.golang.org/grpc"
@@ -27,6 +28,7 @@ func NewPanel(gRPCConn *grpc.ClientConn, db *webapi.Webapi, cfg *config.Config) 
 			StatsServiceClient:   client.NewStatsServiceClient(gRPCConn),
 			NodeID:               cfg.NodeID,
 			CheckRate:            cfg.CheckRate,
+			SpeedTestCheckRate:   cfg.SpeedTestCheckRate,
 			CurrentNodeInfo:      &model.NodeInfo{},
 			NextNodeInfo:         &model.NodeInfo{},
 		},
@@ -41,11 +43,23 @@ func (p *Panel) Start() {
 		}
 	}
 	doFunc()
-
+	speedTestFunc := func() {
+		result, err := speedtest.GetSpeedtest()
+		if err != nil {
+			newError("panel#speedtest").Base(err).AtError().WriteToLog()
+		}
+		p.db.UploadSpeedTest(p.manager.NodeID, result)
+	}
 	c := cron.New()
 	err := c.AddFunc(fmt.Sprintf("@every %ds", p.manager.CheckRate), doFunc)
 	if err != nil {
 		fatal(err)
+	}
+	if p.manager.SpeedTestCheckRate > 0 {
+		err = c.AddFunc(fmt.Sprintf("@every %dh", p.manager.CheckRate), speedTestFunc)
+		if err != nil {
+			newError("Can't add speed test into cron").AtWarning().WriteToLog()
+		}
 	}
 	c.Start()
 	c.Run()

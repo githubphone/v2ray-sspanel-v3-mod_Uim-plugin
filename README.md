@@ -276,6 +276,7 @@ config.json Example
   "sspanel": {
     "nodeId": 20,
     "checkRate": 60,
+    "SpeedTestCheckRate": 6,
     "panelUrl": "xxxx",
     "panelKey": "xxxx"
   }

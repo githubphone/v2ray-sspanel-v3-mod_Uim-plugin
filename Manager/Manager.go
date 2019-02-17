@@ -23,6 +23,7 @@ type Manager struct {
 	MainListenPort       uint16
 	NodeID               uint
 	CheckRate            int
+	SpeedTestCheckRate   int
 }
 
 func (manager *Manager) GetUsers() map[string]model.UserModel {
