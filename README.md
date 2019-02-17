@@ -285,9 +285,9 @@ config.json Example
 
 一键安装 caddy 和cf ddns tls插件
 
-~~
+~~~
 curl https://getcaddy.com | bash -s dyndns,tls.dns.cloudflare
-~~
+~~~
 
 Caddyfile 
 
