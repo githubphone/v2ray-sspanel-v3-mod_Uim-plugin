@@ -59,7 +59,7 @@ func (p *Panel) Start() {
 		fatal(err)
 	}
 	if p.manager.SpeedTestCheckRate > 0 {
-		err = c.AddFunc(fmt.Sprintf("@every %dh", p.manager.CheckRate), speedTestFunc)
+		err = c.AddFunc(fmt.Sprintf("@every %dm", p.manager.SpeedTestCheckRate), speedTestFunc)
 		if err != nil {
 			newError("Can't add speed test into cron").AtWarning().WriteToLog()
 		}
