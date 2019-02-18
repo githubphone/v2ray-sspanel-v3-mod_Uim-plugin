@@ -37,15 +37,11 @@ type Speedresult struct {
 	CMDLSpeed string `json:"cmccdownload"`
 }
 
-func GetSpeedtest() ([]Speedresult, error) {
-	opts := ParseOpts()
-	client := NewClient(opts)
-
+func GetSpeedtest(client Client) ([]Speedresult, error) {
 	config, err := client.Config()
 	if err != nil {
 		return nil, newError(err)
 	}
-
 	newErrorf("Testing from %s (%s)...\n", config.Client.ISP, config.Client.IP).AtInfo().WriteToLog()
 	final_result := []Speedresult{}
 	result := Speedresult{}

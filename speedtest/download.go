@@ -20,7 +20,10 @@ func (client *client) downloadFile(url string, start time.Time, ret chan int) {
 	}()
 
 	if time.Since(start) > maxDownloadDuration {
-		newErrorf("[%s] Download timeout", url).AtWarning().WriteToLog()
+		if !client.opts.Quiet {
+			newErrorf("[%s] Download timeout", url).AtWarning().WriteToLog()
+		}
+
 		return
 	}
 	resp, err := client.Get(url)

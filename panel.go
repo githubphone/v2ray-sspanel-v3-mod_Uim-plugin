@@ -14,15 +14,17 @@ import (
 )
 
 type Panel struct {
-	db      *webapi.Webapi
-	manager *Manager.Manager
+	db              *webapi.Webapi
+	manager         *Manager.Manager
+	speedtestClient speedtest.Client
 }
 
 func NewPanel(gRPCConn *grpc.ClientConn, db *webapi.Webapi, cfg *config.Config) (*Panel, error) {
-
+	opts := speedtest.ParseOpts()
+	speedtestClient := speedtest.NewClient(opts)
 	var newpanel = Panel{
-
-		db: db,
+		speedtestClient: speedtestClient,
+		db:              db,
 		manager: &Manager.Manager{
 			HandlerServiceClient: client.NewHandlerServiceClient(gRPCConn, "MAIN_INBOUND"),
 			StatsServiceClient:   client.NewStatsServiceClient(gRPCConn),
@@ -46,8 +48,9 @@ func (p *Panel) Start() {
 		}
 	}
 	doFunc()
+
 	speedTestFunc := func() {
-		result, err := speedtest.GetSpeedtest()
+		result, err := speedtest.GetSpeedtest(p.speedtestClient)
 		if err != nil {
 			newError("panel#speedtest").Base(err).AtError().WriteToLog()
 		}
@@ -59,10 +62,14 @@ func (p *Panel) Start() {
 		fatal(err)
 	}
 	if p.manager.SpeedTestCheckRate > 0 {
-		err = c.AddFunc(fmt.Sprintf("@every %dm", p.manager.SpeedTestCheckRate), speedTestFunc)
+		c2 := cron.New()
+		newErrorf("@every %ds", p.manager.SpeedTestCheckRate).AtInfo().WriteToLog()
+		err = c2.AddFunc(fmt.Sprintf("@every %ds", p.manager.SpeedTestCheckRate), speedTestFunc)
 		if err != nil {
 			newError("Can't add speed test into cron").AtWarning().WriteToLog()
 		}
+		c2.Start()
+		c2.Run()
 	}
 	c.Start()
 	c.Run()

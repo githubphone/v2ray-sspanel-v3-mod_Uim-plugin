@@ -2,7 +2,6 @@ package speedtest
 
 import (
 	"encoding/xml"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -32,7 +31,7 @@ type Config struct {
 
 func (client *client) Log(format string, a ...interface{}) {
 	if !client.opts.Quiet {
-		log.Printf(format, a...)
+		newErrorf(format, a...).AtInfo().WriteToLog()
 	}
 }
 

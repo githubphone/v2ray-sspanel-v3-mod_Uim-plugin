@@ -58,7 +58,9 @@ func (client *client) uploadFile(url string, start time.Time, size int, ret chan
 			strings.NewReader("content1="),
 			io.LimitReader(&safeReader{rand.Reader}, int64(size-9))))
 	if err != nil {
-		newErrorf("[%s] Upload failed: %v\n", url, err).AtWarning().WriteToLog()
+		if !client.opts.Quiet {
+			newErrorf("[%s] Upload failed: %v\n", url, err).AtWarning().WriteToLog()
+		}
 		return
 	}
 
