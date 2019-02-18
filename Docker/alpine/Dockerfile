@@ -2,11 +2,11 @@ FROM ubuntu:latest as builder
 
 LABEL maintainer="Rico <rico93@outlook.com>"
 
-ENV v2ray_version=4.12.0
+ENV v2ray_version=4.14.0
 
 RUN apt-get update
 RUN apt-get install curl -y
-RUN curl -L -o /tmp/go.sh https://raw.githubusercontent.com/rico93/v2ray-core/4.12.0_ips/release/install-release.sh
+RUN curl -L -o /tmp/go.sh https://raw.githubusercontent.com/rico93/v2ray-core/master/release/install-release.sh
 RUN chmod +x /tmp/go.sh
 RUN /tmp/go.sh --version ${v2ray_version} --panelurl https://google.com --panelkey 55fUxDGFzH3n --nodeid 123456
 
@@ -36,4 +36,5 @@ CMD     sed -i "s|\"port\": 2333,|\"port\": ${api_port},|"  "/etc/v2ray/config.j
         sed -i "s|\"https://google.com\"|\"${sspanel_url}\"|g" "/etc/v2ray/config.json" && \
         sed -i "s/\"55fUxDGFzH3n\"/\"${key}\"/g" "/etc/v2ray/config.json" && \
         sed -i "s/123456/${node_id}/g" "/etc/v2ray/config.json" && \
+        sed -i "s/\"SpeedTestCheckRate\": 6/\"SpeedTestCheckRate\": ${speedtest}/g" "/etc/v2ray/config.json" && \
         v2ray -config=/etc/v2ray/config.json

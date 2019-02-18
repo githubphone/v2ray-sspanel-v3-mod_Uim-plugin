@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"v2ray.com/core/common/errors"
 	"v2ray.com/core/common/platform"
-	"v2ray.com/ext/tools/conf"
+	"v2ray.com/core/infra/conf"
 )
 
 //var (

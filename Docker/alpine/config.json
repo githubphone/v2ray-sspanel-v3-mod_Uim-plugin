@@ -97,6 +97,7 @@
   "sspanel": {
     "nodeId": 123456,
     "checkRate": 60,
+    "SpeedTestCheckRate": 6,
     "panelUrl": "https://google.com",
     "panelKey": "55fUxDGFzH3n"
   }
