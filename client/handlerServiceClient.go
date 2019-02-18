@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/model"
+	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/utility"
 	"google.golang.org/grpc"
 	"strings"
 	"v2ray.com/core"
@@ -12,6 +13,7 @@ import (
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/common/uuid"
+	"v2ray.com/core/proxy/mtproto"
 	"v2ray.com/core/proxy/shadowsocks"
 	"v2ray.com/core/proxy/vmess"
 	"v2ray.com/core/proxy/vmess/inbound"
@@ -150,7 +152,30 @@ func (h *HandlerServiceClient) AddVmessInbound(port uint16, address string, stre
 	}
 	return h.AddInbound(&addinboundrequest)
 }
-
+func (h *HandlerServiceClient) AddMTInbound(port uint16, address string, streamsetting *internet.StreamConfig) error {
+	var addinboundrequest command.AddInboundRequest
+	addinboundrequest = command.AddInboundRequest{
+		Inbound: &core.InboundHandlerConfig{
+			Tag: "tg-in",
+			ReceiverSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
+				PortRange: net.SinglePortRange(net.Port(port)),
+				Listen:    net.NewIPOrDomain(net.ParseAddress(address)),
+			}),
+			ProxySettings: serial.ToTypedMessage(&mtproto.ServerConfig{
+				User: []*protocol.User{
+					{
+						Level: 0,
+						Email: "rico93@xxx.com",
+						Account: serial.ToTypedMessage(&mtproto.Account{
+							Secret: utility.MD5(utility.GetRandomString(16)),
+						}),
+					},
+				},
+			}),
+		},
+	}
+	return h.AddInbound(&addinboundrequest)
+}
 func (h *HandlerServiceClient) AddSSInbound(user model.UserModel) error {
 	var addinboundrequest command.AddInboundRequest
 	addinboundrequest = command.AddInboundRequest{
@@ -201,6 +226,16 @@ func (h *HandlerServiceClient) ConverSSUser(userModel model.UserModel) *protocol
 			Password:   userModel.Passwd,
 			CipherType: CipherTypeMap[strings.ToLower(userModel.Method)],
 			Ota:        shadowsocks.Account_Auto,
+		}),
+	}
+}
+
+func (h *HandlerServiceClient) ConverMTUser(userModel model.UserModel) *protocol.User {
+	return &protocol.User{
+		Level: 0,
+		Email: userModel.Email,
+		Account: serial.ToTypedMessage(&mtproto.Account{
+			Secret: utility.MD5(userModel.Uuid),
 		}),
 	}
 }
