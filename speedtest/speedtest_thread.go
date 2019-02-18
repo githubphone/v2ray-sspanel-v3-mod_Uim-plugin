@@ -44,25 +44,34 @@ func GetSpeedtest(client Client) ([]Speedresult, error) {
 	}
 	newErrorf("Testing from %s (%s)...\n", config.Client.ISP, config.Client.IP).AtInfo().WriteToLog()
 	final_result := []Speedresult{}
-	result := Speedresult{}
+	result := Speedresult{
+		CTPing:    "0.000 ms",
+		CUPing:    "0.000 ms",
+		CMPing:    "0.000 ms",
+		CTDLSpeed: "0.00 Mib/s",
+		CTUpSpeed: "0.00 Mib/s",
+		CUDLSpeed: "0.00 Mib/s",
+		CUUpSpeed: "0.00 Mib/s",
+		CMDLSpeed: "0.00 Mib/s",
+		CMUpSpeed: "0.00 Mib/s"}
 	server := selectServer("Telecom", client)
 	if server != nil {
 		result.CTPing = fmt.Sprintf("%.3f ms", server.Latency.Seconds()*1e3)
-		result.CTDLSpeed = fmt.Sprintf("%.2f MiB/s", float64(server.DownloadSpeed()/(1<<20)))
-		result.CTUpSpeed = fmt.Sprintf("%.2f MiB/s", float64(server.UploadSpeed()/(1<<20)))
+		result.CTDLSpeed = fmt.Sprintf("%.2f Mib/s", float64(server.DownloadSpeed()/(1<<17)))
+		result.CTUpSpeed = fmt.Sprintf("%.2f Mib/s", float64(server.UploadSpeed()/(1<<17)))
 	}
 	server = selectServer("Mobile", client)
 	if server != nil {
 		result.CMPing = fmt.Sprintf("%.3f ms", server.Latency.Seconds()*1e3)
-		result.CMDLSpeed = fmt.Sprintf("%.2f MiB/s", float64(server.DownloadSpeed()/(1<<20)))
-		result.CMUpSpeed = fmt.Sprintf("%.2f MiB/s", float64(server.UploadSpeed()/(1<<20)))
+		result.CMDLSpeed = fmt.Sprintf("%.2f Mib/s", float64(server.DownloadSpeed()/(1<<17)))
+		result.CMUpSpeed = fmt.Sprintf("%.2f Mib/s", float64(server.UploadSpeed()/(1<<17)))
 	}
 
 	server = selectServer("Unicom", client)
 	if server != nil {
 		result.CUPing = fmt.Sprintf("%.3f ms", server.Latency.Seconds()*1e3)
-		result.CUDLSpeed = fmt.Sprintf("%.2f MiB/s", float64(server.DownloadSpeed()/(1<<20)))
-		result.CUUpSpeed = fmt.Sprintf("%.2f MiB/s", float64(server.UploadSpeed()/(1<<20)))
+		result.CUDLSpeed = fmt.Sprintf("%.2f Mib/s", float64(server.DownloadSpeed()/(1<<17)))
+		result.CUUpSpeed = fmt.Sprintf("%.2f Mib/s", float64(server.UploadSpeed()/(1<<17)))
 	}
 	return append(final_result, result), nil
 }

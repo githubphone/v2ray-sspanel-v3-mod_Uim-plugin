@@ -19,14 +19,9 @@ type Opts struct {
 func NewOpts() *Opts {
 
 	return &Opts{
-		SpeedInBytes: false,
-		Quiet:        true,
-		List:         false,
-		Server:       0,
-		Interface:    "",
-		Timeout:      10 * time.Second,
-		Secure:       true,
-		Help:         false,
-		Version:      false,
+		Quiet:     true,
+		Server:    0,
+		Interface: "",
+		Timeout:   10 * time.Second,
 	}
 }

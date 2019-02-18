@@ -54,7 +54,12 @@ func (p *Panel) Start() {
 		if err != nil {
 			newError("panel#speedtest").Base(err).AtError().WriteToLog()
 		}
-		p.db.UploadSpeedTest(p.manager.NodeID, result)
+		newError(result).AtInfo().WriteToLog()
+		if p.db.UploadSpeedTest(p.manager.NodeID, result) {
+			newError("succesfully upload speedtest result").AtInfo().WriteToLog()
+		} else {
+			newError("failed to upload speedtest result").AtInfo().WriteToLog()
+		}
 	}
 	c := cron.New()
 	err := c.AddFunc(fmt.Sprintf("@every %ds", p.manager.CheckRate), doFunc)
@@ -63,7 +68,7 @@ func (p *Panel) Start() {
 	}
 	if p.manager.SpeedTestCheckRate > 0 {
 		newErrorf("@every %ds", p.manager.SpeedTestCheckRate).AtInfo().WriteToLog()
-		err = c.AddFunc(fmt.Sprintf("@every %ds", p.manager.SpeedTestCheckRate), speedTestFunc)
+		err = c.AddFunc(fmt.Sprintf("@every %dh", p.manager.SpeedTestCheckRate), speedTestFunc)
 		if err != nil {
 			newError("Can't add speed test into cron").AtWarning().WriteToLog()
 		}
