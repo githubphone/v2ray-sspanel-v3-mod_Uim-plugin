@@ -31,6 +31,9 @@ func NewPanel(gRPCConn *grpc.ClientConn, db *webapi.Webapi, cfg *config.Config) 
 			SpeedTestCheckRate:   cfg.SpeedTestCheckRate,
 			CurrentNodeInfo:      &model.NodeInfo{},
 			NextNodeInfo:         &model.NodeInfo{},
+			Users:                map[string]model.UserModel{},
+			UserToBeMoved:        map[string]model.UserModel{},
+			UserToBeAdd:          map[string]model.UserModel{},
 		},
 	}
 	return &newpanel, nil
@@ -77,6 +80,10 @@ func (p *Panel) initial() {
 	p.manager.UpdataUsers()
 	p.manager.CurrentNodeInfo = &model.NodeInfo{}
 	p.manager.NextNodeInfo = &model.NodeInfo{}
+	p.manager.UserToBeAdd = map[string]model.UserModel{}
+	p.manager.UserToBeMoved = map[string]model.UserModel{}
+	p.manager.Users = map[string]model.UserModel{}
+
 }
 
 func (p *Panel) updateManager() {
