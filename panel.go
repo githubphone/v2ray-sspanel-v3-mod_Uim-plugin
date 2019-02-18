@@ -20,7 +20,7 @@ type Panel struct {
 }
 
 func NewPanel(gRPCConn *grpc.ClientConn, db *webapi.Webapi, cfg *config.Config) (*Panel, error) {
-	opts := speedtest.ParseOpts()
+	opts := speedtest.NewOpts()
 	speedtestClient := speedtest.NewClient(opts)
 	var newpanel = Panel{
 		speedtestClient: speedtestClient,
@@ -62,14 +62,11 @@ func (p *Panel) Start() {
 		fatal(err)
 	}
 	if p.manager.SpeedTestCheckRate > 0 {
-		c2 := cron.New()
 		newErrorf("@every %ds", p.manager.SpeedTestCheckRate).AtInfo().WriteToLog()
-		err = c2.AddFunc(fmt.Sprintf("@every %ds", p.manager.SpeedTestCheckRate), speedTestFunc)
+		err = c.AddFunc(fmt.Sprintf("@every %ds", p.manager.SpeedTestCheckRate), speedTestFunc)
 		if err != nil {
 			newError("Can't add speed test into cron").AtWarning().WriteToLog()
 		}
-		c2.Start()
-		c2.Run()
 	}
 	c.Start()
 	c.Run()
