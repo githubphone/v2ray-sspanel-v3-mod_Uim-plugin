@@ -8,7 +8,7 @@
 
 # 划重点
 1. 用户务必保证，host 务必填写没有被墙的地址
-
+2. 目前端口设置为0，才会监听本地，不再是443
 ## 项目状态
 
 支持 [ss-panel-v3-mod_Uim](https://github.com/NimaQu/ss-panel-v3-mod_Uim) 的 webapi。 目前自己也尝试维护了一个版本, [panel](https://github.com/rico93/ss-panel-v3-mod_Uim)
