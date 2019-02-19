@@ -11,6 +11,7 @@ import (
 	"github.com/robfig/cron"
 	"google.golang.org/grpc"
 	"reflect"
+	"runtime"
 )
 
 type Panel struct {
@@ -46,6 +47,8 @@ func (p *Panel) Start() {
 		if err := p.do(); err != nil {
 			newError("panel#do").Base(err).AtError().WriteToLog()
 		}
+		// Explicitly triggering GC to remove garbage
+		runtime.GC()
 	}
 	doFunc()
 
@@ -60,6 +63,8 @@ func (p *Panel) Start() {
 		} else {
 			newError("failed to upload speedtest result").AtInfo().WriteToLog()
 		}
+		// Explicitly triggering GC to remove garbage
+		runtime.GC()
 	}
 	c := cron.New()
 	err := c.AddFunc(fmt.Sprintf("@every %ds", p.manager.CheckRate), doFunc)

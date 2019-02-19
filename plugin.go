@@ -7,6 +7,7 @@ import (
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/webapi"
 	"google.golang.org/grpc/status"
 	"os"
+	"runtime"
 	"time"
 	"v2ray.com/core/common/errors"
 )
@@ -54,7 +55,8 @@ func run() error {
 
 		p.Start()
 	}()
-
+	// Explicitly triggering GC to remove garbage
+	runtime.GC()
 	return nil
 }
 

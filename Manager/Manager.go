@@ -114,7 +114,7 @@ func (manager *Manager) UpdataUsers() {
 
 func (manager *Manager) UpdateMainAddressAndProt(node_info *model.NodeInfo) {
 	if node_info.Sort == 11 {
-		if node_info.Server["port"] == "443" || node_info.Server["port"] == "" {
+		if node_info.Server["port"] == "0" || node_info.Server["port"] == "" {
 			manager.MainAddress = "127.0.0.1"
 			manager.MainListenPort = 10550
 			if node_info.Server["inside_port"] != "" {
