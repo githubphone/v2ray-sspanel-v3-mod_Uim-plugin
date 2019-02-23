@@ -152,6 +152,44 @@ func (h *HandlerServiceClient) AddVmessInbound(port uint16, address string, stre
 	}
 	return h.AddInbound(&addinboundrequest)
 }
+
+func (h *HandlerServiceClient) AddVmessOutbound(tag string, port uint16, address string, streamsetting *internet.StreamConfig, user *protocol.User) error {
+	var addoutboundrequest command.AddOutboundRequest
+	addoutboundrequest = command.AddOutboundRequest{
+		Outbound: &core.OutboundHandlerConfig{
+			Tag: tag,
+			SenderSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
+				PortRange:      net.SinglePortRange(net.Port(port)),
+				Listen:         net.NewIPOrDomain(net.ParseAddress(address)),
+				StreamSettings: streamsetting,
+			}),
+			ProxySettings: serial.ToTypedMessage(&inbound.Config{
+				User: []*protocol.User{
+					user,
+				},
+			}),
+		},
+	}
+	return h.AddOutbound(&addoutboundrequest)
+}
+
+func (h *HandlerServiceClient) AddSSOutbound(user model.UserModel, tag string) error {
+	var addoutboundrequest command.AddOutboundRequest
+	addoutboundrequest = command.AddOutboundRequest{
+		Outbound: &core.OutboundHandlerConfig{
+			Tag: tag,
+			SenderSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
+				PortRange: net.SinglePortRange(net.Port(user.Port)),
+				Listen:    net.NewIPOrDomain(net.ParseAddress("0.0.0.0")),
+			}),
+			ProxySettings: serial.ToTypedMessage(&shadowsocks.ServerConfig{
+				User:    h.ConverSSUser(user),
+				Network: []net.Network{net.Network_TCP, net.Network_UDP},
+			}),
+		},
+	}
+	return h.AddOutbound(&addoutboundrequest)
+}
 func (h *HandlerServiceClient) AddMTInbound(port uint16, address string, streamsetting *internet.StreamConfig) error {
 	var addinboundrequest command.AddInboundRequest
 	addinboundrequest = command.AddInboundRequest{
@@ -197,11 +235,22 @@ func (h *HandlerServiceClient) AddInbound(req *command.AddInboundRequest) error 
 	_, err := h.HandlerServiceClient.AddInbound(context.Background(), req)
 	return err
 }
+func (h *HandlerServiceClient) AddOutbound(req *command.AddOutboundRequest) error {
+	_, err := h.HandlerServiceClient.AddOutbound(context.Background(), req)
+	return err
+}
 func (h *HandlerServiceClient) RemoveInbound(tag string) error {
 	req := command.RemoveInboundRequest{
 		Tag: tag,
 	}
 	_, err := h.HandlerServiceClient.RemoveInbound(context.Background(), &req)
+	return err
+}
+func (h *HandlerServiceClient) RemoveOutbound(tag string) error {
+	req := command.RemoveOutboundRequest{
+		Tag: tag,
+	}
+	_, err := h.HandlerServiceClient.RemoveOutbound(context.Background(), &req)
 	return err
 }
 

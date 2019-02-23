@@ -27,16 +27,19 @@ func NewPanel(gRPCConn *grpc.ClientConn, db *webapi.Webapi, cfg *config.Config) 
 		speedtestClient: speedtestClient,
 		db:              db,
 		manager: &Manager.Manager{
-			HandlerServiceClient: client.NewHandlerServiceClient(gRPCConn, "MAIN_INBOUND"),
-			StatsServiceClient:   client.NewStatsServiceClient(gRPCConn),
-			NodeID:               cfg.NodeID,
-			CheckRate:            cfg.CheckRate,
-			SpeedTestCheckRate:   cfg.SpeedTestCheckRate,
-			CurrentNodeInfo:      &model.NodeInfo{},
-			NextNodeInfo:         &model.NodeInfo{},
-			Users:                map[string]model.UserModel{},
-			UserToBeMoved:        map[string]model.UserModel{},
-			UserToBeAdd:          map[string]model.UserModel{},
+			HandlerServiceClient:  client.NewHandlerServiceClient(gRPCConn, "MAIN_INBOUND"),
+			StatsServiceClient:    client.NewStatsServiceClient(gRPCConn),
+			UserRuleServiceClient: client.NewUserRuleServerClient(gRPCConn),
+			NodeID:                cfg.NodeID,
+			CheckRate:             cfg.CheckRate,
+			SpeedTestCheckRate:    cfg.SpeedTestCheckRate,
+			CurrentNodeInfo:       &model.NodeInfo{},
+			NextNodeInfo:          &model.NodeInfo{},
+			Users:                 map[string]model.UserModel{},
+			UserToBeMoved:         map[string]model.UserModel{},
+			UserToBeAdd:           map[string]model.UserModel{},
+			Id2PrefixedIdmap:      map[uint]string{},
+			Id2DisServer:          map[uint]string{},
 		},
 	}
 	return &newpanel, nil
@@ -97,6 +100,8 @@ func (p *Panel) initial() {
 	p.manager.UserToBeAdd = map[string]model.UserModel{}
 	p.manager.UserToBeMoved = map[string]model.UserModel{}
 	p.manager.Users = map[string]model.UserModel{}
+	p.manager.Id2PrefixedIdmap = map[uint]string{}
+	p.manager.Id2DisServer = map[uint]string{}
 
 }
 
@@ -162,7 +167,52 @@ func (p *Panel) updateManager() {
 	} else {
 		newError("check ports finished. No need to update ").AtInfo().WriteToLog()
 	}
+	newError("Start to check relay rules ").AtInfo().WriteToLog()
+	p.updateOutbounds()
+}
+func (p *Panel) updateOutbounds() {
+	data, err := p.db.GetDisNodeInfo(p.manager.NodeID)
+	if err != nil {
+		newError(err).AtWarning().WriteToLog()
+		p.initial()
+		return
+	}
+	if data.Ret != 1 {
+		newError(data.Data).AtWarning().WriteToLog()
+		p.initial()
+		return
+	}
+	if len(data.Data) > 0 {
+		for _, value := range data.Data {
+			currentserver, find := p.manager.Id2DisServer[value.UserId]
+			if find {
+				if currentserver != value.Server_raw {
+					p.manager.RemoveOutBound(currentserver+fmt.Sprintf("%d", value.UserId), value.UserId)
+					p.manager.AddOuntBound(value)
+				}
+			} else {
+				p.manager.AddOuntBound(value)
+			}
+		}
+		for id, currentserver := range p.manager.Id2DisServer {
+			flag := false
+			currenttag := currentserver + fmt.Sprintf("%d", id)
+			for _, nextserver := range data.Data {
+				if currenttag == nextserver.Server_raw+fmt.Sprintf("%d", nextserver.UserId) {
+					flag = true
+					break
+				}
+			}
+			if !flag {
+				p.manager.RemoveOutBound(currenttag, id)
+			}
+		}
+		p.manager.Id2DisServer = map[uint]string{}
+		for _, nextserver := range data.Data {
+			p.manager.Id2DisServer[nextserver.UserId] = nextserver.Server_raw
+		}
 
+	}
 }
 func (p *Panel) updateThroughout() {
 	current_user := p.manager.GetUsers()

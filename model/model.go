@@ -28,3 +28,11 @@ type UserOnLineIP struct {
 	UserId uint   `json:"user_id"`
 	Ip     string `json:"ip"`
 }
+
+type DisNodeInfo struct {
+	Server_raw string `json:"dist_node_server"`
+	Sort       uint   `json:"dist_node_sort"`
+	Port       uint16 `json:"port"`
+	Server     map[string]interface{}
+	UserId     uint `json:"user_id"`
+}

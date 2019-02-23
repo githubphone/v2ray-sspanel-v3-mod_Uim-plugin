@@ -11,19 +11,22 @@ import (
 )
 
 type Manager struct {
-	HandlerServiceClient *client.HandlerServiceClient
-	StatsServiceClient   *client.StatsServiceClient
-	CurrentNodeInfo      *model.NodeInfo
-	NextNodeInfo         *model.NodeInfo
-	UserChanged          bool
-	UserToBeMoved        map[string]model.UserModel
-	UserToBeAdd          map[string]model.UserModel
-	Users                map[string]model.UserModel
-	MainAddress          string
-	MainListenPort       uint16
-	NodeID               uint
-	CheckRate            int
-	SpeedTestCheckRate   int
+	HandlerServiceClient  *client.HandlerServiceClient
+	StatsServiceClient    *client.StatsServiceClient
+	UserRuleServiceClient *client.UserRuleServerClient
+	CurrentNodeInfo       *model.NodeInfo
+	NextNodeInfo          *model.NodeInfo
+	UserChanged           bool
+	UserToBeMoved         map[string]model.UserModel
+	UserToBeAdd           map[string]model.UserModel
+	Users                 map[string]model.UserModel
+	Id2PrefixedIdmap      map[uint]string
+	Id2DisServer          map[uint]string
+	MainAddress           string
+	MainListenPort        uint16
+	NodeID                uint
+	CheckRate             int
+	SpeedTestCheckRate    int
 }
 
 func (manager *Manager) GetUsers() map[string]model.UserModel {
@@ -110,6 +113,10 @@ func (manager *Manager) UpdataUsers() {
 		manager.Users[successfully_add[index]] = manager.UserToBeAdd[successfully_add[index]]
 		delete(manager.UserToBeAdd, successfully_add[index])
 	}
+	manager.Id2PrefixedIdmap = map[uint]string{}
+	for key, value := range manager.Users {
+		manager.Id2PrefixedIdmap[value.UserID] = key
+	}
 }
 
 func (manager *Manager) UpdateMainAddressAndProt(node_info *model.NodeInfo) {
@@ -169,6 +176,64 @@ func (m *Manager) AddMainInbound() error {
 	}
 	return nil
 }
+func (m *Manager) AddOuntBound(disnodeinfo *model.DisNodeInfo) error {
+	if disnodeinfo.Server_raw != "" {
+		if disnodeinfo.Sort == 11 {
+			var streamsetting *internet.StreamConfig
+			streamsetting = &internet.StreamConfig{}
+
+			if disnodeinfo.Server["protocol"] == "ws" {
+				host := "www.bing.com"
+				path := "/"
+				if m.NextNodeInfo.Server["path"] != "" {
+					path = disnodeinfo.Server["path"].(string)
+				}
+				if m.NextNodeInfo.Server["host"] != "" {
+					host = disnodeinfo.Server["host"].(string)
+				}
+				streamsetting = client.GetWebSocketStreamConfig(path, host)
+			} else if m.NextNodeInfo.Server["protocol"] == "kcp" || m.NextNodeInfo.Server["protocol"] == "mkcp" {
+				header_key := "noop"
+				if m.NextNodeInfo.Server["protocol_param"] != "" {
+					header_key = disnodeinfo.Server["protocol_param"].(string)
+				}
+				streamsetting = client.GetKcpStreamConfig(header_key)
+			}
+			if err := m.HandlerServiceClient.AddVmessOutbound(disnodeinfo.Server_raw+fmt.Sprintf("%d", disnodeinfo.UserId), disnodeinfo.Port, disnodeinfo.Server["server_address"].(string), streamsetting, m.HandlerServiceClient.ConvertVmessUser(
+				m.Users[m.Id2PrefixedIdmap[disnodeinfo.UserId]])); err != nil {
+				return err
+			} else {
+				newErrorf("Successfully add Outbound %s port %d", disnodeinfo.Server_raw+fmt.Sprintf("%d", disnodeinfo.UserId), disnodeinfo.Port).AtInfo().WriteToLog()
+			}
+		}
+		if disnodeinfo.Sort == 0 {
+			if err := m.HandlerServiceClient.AddSSOutbound(m.Users[m.Id2PrefixedIdmap[disnodeinfo.UserId]], disnodeinfo.Server_raw+fmt.Sprintf("%d", disnodeinfo.UserId)); err == nil {
+				newErrorf("Successfully add user %s  outbound ", m.Id2PrefixedIdmap[disnodeinfo.UserId]).AtInfo().WriteToLog()
+			} else {
+				newError(err).AtDebug().WriteToLog()
+			}
+		}
+		m.AddUserRule(disnodeinfo.Server_raw+fmt.Sprintf("%d", disnodeinfo.UserId), m.Users[m.Id2PrefixedIdmap[disnodeinfo.UserId]].Email)
+	}
+
+	return nil
+}
+func (m *Manager) AddUserRule(tag, email string) {
+	if err := m.UserRuleServiceClient.AddUserRelyRule(tag, []string{email}); err == nil {
+		newErrorf("Successfully remove user %s  %s server rule  ", email, tag).AtInfo().WriteToLog()
+	} else {
+		newError(err).AtDebug().WriteToLog()
+	}
+}
+func (m *Manager) RemoveUserRule(email string) {
+
+	if err := m.UserRuleServiceClient.RemveUserRelayRule([]string{email}); err == nil {
+		newErrorf("Successfully remove user %s  rule", email).AtInfo().WriteToLog()
+	} else {
+		newError(err).AtDebug().WriteToLog()
+	}
+}
+
 func (m *Manager) RemoveInbound() {
 	if m.CurrentNodeInfo.Server_raw != "" {
 		if m.CurrentNodeInfo.Sort == 11 {
@@ -180,6 +245,14 @@ func (m *Manager) RemoveInbound() {
 			}
 		}
 	}
+}
+func (m *Manager) RemoveOutBound(tag string, userid uint) {
+	if err := m.HandlerServiceClient.RemoveOutbound(tag); err != nil {
+		newError(err).AtWarning().WriteToLog()
+	} else {
+		newErrorf("Successfully remove outbound %s", tag).AtInfo().WriteToLog()
+	}
+	m.RemoveUserRule(m.Users[m.Id2PrefixedIdmap[userid]].Email)
 }
 
 func (m *Manager) CopyUsers() {
