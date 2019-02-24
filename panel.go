@@ -95,6 +95,7 @@ func (p *Panel) initial() {
 	p.manager.RemoveInbound()
 	p.manager.CopyUsers()
 	p.manager.UpdataUsers()
+	p.manager.RemoveAllUserOutBound()
 	p.manager.CurrentNodeInfo = &model.NodeInfo{}
 	p.manager.NextNodeInfo = &model.NodeInfo{}
 	p.manager.UserToBeAdd = map[string]model.UserModel{}
@@ -183,37 +184,75 @@ func (p *Panel) updateOutbounds() {
 		return
 	}
 	if len(data.Data) > 0 {
-		for _, value := range data.Data {
-			currentserver, find := p.manager.Id2DisServer[value.UserId]
-			if find {
-				if currentserver != value.Server_raw {
-					p.manager.RemoveOutBound(currentserver+fmt.Sprintf("%d", value.UserId), value.UserId)
+		globalSettingindex := -1
+		for index, value := range data.Data {
+			if value.UserId == 0 {
+				globalSettingindex = index
+				break
+			}
+		}
+		if globalSettingindex != -1 {
+			nextserver := data.Data[globalSettingindex]
+			for _, user := range p.manager.Users {
+				currentserver, find := p.manager.Id2DisServer[user.UserID]
+				nextserver.UserId = user.UserID
+				if find {
+					if currentserver != nextserver.Server_raw {
+						p.manager.RemoveOutBound(currentserver+fmt.Sprintf("%d", user.UserID), user.UserID)
+						p.manager.AddOuntBound(nextserver)
+					}
+				} else {
+					p.manager.AddOuntBound(nextserver)
+				}
+			}
+			for id, currentserver := range p.manager.Id2DisServer {
+				currenttag := currentserver + fmt.Sprintf("%d", id)
+				if currenttag == nextserver.Server_raw+fmt.Sprintf("%d", id) {
+					p.manager.RemoveOutBound(currenttag, id)
+				}
+			}
+
+			p.manager.Id2DisServer = map[uint]string{}
+			for _, user := range p.manager.Users {
+				p.manager.Id2DisServer[user.UserID] = nextserver.Server_raw
+			}
+
+		} else {
+			for _, value := range data.Data {
+				currentserver, find := p.manager.Id2DisServer[value.UserId]
+				if find {
+					if currentserver != value.Server_raw {
+						p.manager.RemoveOutBound(currentserver+fmt.Sprintf("%d", value.UserId), value.UserId)
+						p.manager.AddOuntBound(value)
+					}
+				} else {
 					p.manager.AddOuntBound(value)
 				}
-			} else {
-				p.manager.AddOuntBound(value)
 			}
-		}
-		for id, currentserver := range p.manager.Id2DisServer {
-			flag := false
-			currenttag := currentserver + fmt.Sprintf("%d", id)
-			for _, nextserver := range data.Data {
-				if currenttag == nextserver.Server_raw+fmt.Sprintf("%d", nextserver.UserId) {
-					flag = true
-					break
+			for id, currentserver := range p.manager.Id2DisServer {
+				flag := false
+				currenttag := currentserver + fmt.Sprintf("%d", id)
+				for _, nextserver := range data.Data {
+					if currenttag == nextserver.Server_raw+fmt.Sprintf("%d", nextserver.UserId) {
+						flag = true
+						break
+					}
+				}
+				if !flag {
+					p.manager.RemoveOutBound(currenttag, id)
 				}
 			}
-			if !flag {
-				p.manager.RemoveOutBound(currenttag, id)
+			p.manager.Id2DisServer = map[uint]string{}
+			for _, nextserver := range data.Data {
+				p.manager.Id2DisServer[nextserver.UserId] = nextserver.Server_raw
 			}
-		}
-		p.manager.Id2DisServer = map[uint]string{}
-		for _, nextserver := range data.Data {
-			p.manager.Id2DisServer[nextserver.UserId] = nextserver.Server_raw
+
 		}
 
 	}
+
 }
+
 func (p *Panel) updateThroughout() {
 	current_user := p.manager.GetUsers()
 	usertraffic := []model.UserTrafficLog{}

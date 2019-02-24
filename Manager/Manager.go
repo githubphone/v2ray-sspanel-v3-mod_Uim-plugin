@@ -254,7 +254,11 @@ func (m *Manager) RemoveOutBound(tag string, userid uint) {
 	}
 	m.RemoveUserRule(m.Users[m.Id2PrefixedIdmap[userid]].Email)
 }
-
+func (m *Manager) RemoveAllUserOutBound() {
+	for id, server := range m.Id2DisServer {
+		m.RemoveOutBound(server+fmt.Sprintf("%d", id), id)
+	}
+}
 func (m *Manager) CopyUsers() {
 	jsonString, err := json.Marshal(m.Users)
 	if err != nil {
