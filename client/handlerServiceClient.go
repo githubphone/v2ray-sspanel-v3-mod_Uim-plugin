@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/model"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/utility"
 	"google.golang.org/grpc"
@@ -17,6 +18,7 @@ import (
 	"v2ray.com/core/proxy/shadowsocks"
 	"v2ray.com/core/proxy/vmess"
 	"v2ray.com/core/proxy/vmess/inbound"
+	"v2ray.com/core/proxy/vmess/outbound"
 	"v2ray.com/core/transport/internet"
 	"v2ray.com/core/transport/internet/headers/noop"
 	"v2ray.com/core/transport/internet/headers/srtp"
@@ -42,7 +44,7 @@ var CipherTypeMap = map[string]shadowsocks.CipherType{
 	"aes-128-gcm":            shadowsocks.CipherType_AES_128_GCM,
 	"aes-256-gcm":            shadowsocks.CipherType_AES_256_GCM,
 	"chacha20":               shadowsocks.CipherType_CHACHA20,
-	"chacah-ietf":            shadowsocks.CipherType_CHACHA20_IETF,
+	"chacha20-ietf":          shadowsocks.CipherType_CHACHA20_IETF,
 	"chacha20-ploy1305":      shadowsocks.CipherType_CHACHA20_POLY1305,
 	"chacha20-ietf-poly1305": shadowsocks.CipherType_CHACHA20_POLY1305,
 }
@@ -152,6 +154,51 @@ func (h *HandlerServiceClient) AddVmessInbound(port uint16, address string, stre
 	}
 	return h.AddInbound(&addinboundrequest)
 }
+
+func (h *HandlerServiceClient) AddVmessOutbound(tag string, port uint16, address string, streamsetting *internet.StreamConfig, user *protocol.User) error {
+	var addoutboundrequest command.AddOutboundRequest
+	addoutboundrequest = command.AddOutboundRequest{
+		Outbound: &core.OutboundHandlerConfig{
+			Tag: tag,
+			SenderSettings: serial.ToTypedMessage(&proxyman.SenderConfig{
+				StreamSettings: streamsetting,
+			}),
+			ProxySettings: serial.ToTypedMessage(&outbound.Config{
+				Receiver: []*protocol.ServerEndpoint{
+					{
+						Address: net.NewIPOrDomain(net.ParseAddress(address)),
+						Port:    uint32(port),
+						User: []*protocol.User{
+							user,
+						},
+					},
+				},
+			}),
+		},
+	}
+	return h.AddOutbound(&addoutboundrequest)
+}
+
+func (h *HandlerServiceClient) AddSSOutbound(user model.UserModel, dist *model.DisNodeInfo) error {
+	var addoutboundrequest command.AddOutboundRequest
+	addoutboundrequest = command.AddOutboundRequest{
+		Outbound: &core.OutboundHandlerConfig{
+			Tag: dist.Server_raw + fmt.Sprintf("%d", user.UserID),
+			ProxySettings: serial.ToTypedMessage(&shadowsocks.ClientConfig{
+				Server: []*protocol.ServerEndpoint{
+					{
+						Address: net.NewIPOrDomain(net.ParseAddress(dist.Server["server_address"].(string))),
+						Port:    uint32(dist.Port),
+						User: []*protocol.User{
+							h.ConverSSUser(user),
+						},
+					},
+				},
+			}),
+		},
+	}
+	return h.AddOutbound(&addoutboundrequest)
+}
 func (h *HandlerServiceClient) AddMTInbound(port uint16, address string, streamsetting *internet.StreamConfig) error {
 	var addinboundrequest command.AddInboundRequest
 	addinboundrequest = command.AddInboundRequest{
@@ -197,11 +244,22 @@ func (h *HandlerServiceClient) AddInbound(req *command.AddInboundRequest) error 
 	_, err := h.HandlerServiceClient.AddInbound(context.Background(), req)
 	return err
 }
+func (h *HandlerServiceClient) AddOutbound(req *command.AddOutboundRequest) error {
+	_, err := h.HandlerServiceClient.AddOutbound(context.Background(), req)
+	return err
+}
 func (h *HandlerServiceClient) RemoveInbound(tag string) error {
 	req := command.RemoveInboundRequest{
 		Tag: tag,
 	}
 	_, err := h.HandlerServiceClient.RemoveInbound(context.Background(), &req)
+	return err
+}
+func (h *HandlerServiceClient) RemoveOutbound(tag string) error {
+	req := command.RemoveOutboundRequest{
+		Tag: tag,
+	}
+	_, err := h.HandlerServiceClient.RemoveOutbound(context.Background(), &req)
 	return err
 }
 

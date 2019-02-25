@@ -3,7 +3,8 @@
     "services": [
       "HandlerService",
       "LoggerService",
-      "StatsService"
+      "StatsService",
+      "RuleService"
     ],
     "tag": "api"
   },
@@ -18,6 +19,8 @@
   }
   ],
   "log": {
+    "access": "/var/log/v2ray/access.log",
+    "error": "/var/log/v2ray/error.log",
     "loglevel": "info"
   },
   "outbounds": [{
@@ -95,7 +98,7 @@
   },
   "stats": {},
   "sspanel": {
-    "nodeId": 123456,
+    "nodeid": 20,
     "checkRate": 60,
     "SpeedTestCheckRate": 6,
     "panelUrl": "https://google.com",
