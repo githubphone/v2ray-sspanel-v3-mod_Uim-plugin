@@ -168,8 +168,10 @@ func (p *Panel) updateManager() {
 	} else {
 		newError("check ports finished. No need to update ").AtInfo().WriteToLog()
 	}
-	newError("Start to check relay rules ").AtInfo().WriteToLog()
-	p.updateOutbounds()
+	if p.manager.CurrentNodeInfo.Sort == 12 {
+		newError("Start to check relay rules ").AtInfo().WriteToLog()
+		p.updateOutbounds()
+	}
 }
 func (p *Panel) updateOutbounds() {
 	data, err := p.db.GetDisNodeInfo(p.manager.NodeID)
