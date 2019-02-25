@@ -168,7 +168,7 @@ func (p *Panel) updateManager() {
 	} else {
 		newError("check ports finished. No need to update ").AtInfo().WriteToLog()
 	}
-	if p.manager.CurrentNodeInfo.Sort == 12 {
+	if newNodeinfo.Data.Sort == 12 {
 		newError("Start to check relay rules ").AtInfo().WriteToLog()
 		p.updateOutbounds()
 	}
