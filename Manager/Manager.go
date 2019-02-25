@@ -63,7 +63,7 @@ func (manager *Manager) UpdataUsers() {
 					successfully_removed = append(successfully_removed, key)
 				}
 			}
-		} else if manager.CurrentNodeInfo.Sort == 11 {
+		} else if manager.CurrentNodeInfo.Sort == 11 || manager.CurrentNodeInfo.Sort == 12 {
 			// VMESS
 			// Remove users
 			for key, value := range manager.UserToBeMoved {
@@ -91,7 +91,7 @@ func (manager *Manager) UpdataUsers() {
 					successfully_add = append(successfully_add, key)
 				}
 			}
-		} else if manager.NextNodeInfo.Sort == 11 {
+		} else if manager.NextNodeInfo.Sort == 11 || manager.NextNodeInfo.Sort == 12 {
 			// VMESS
 			// add users
 			for key, value := range manager.UserToBeAdd {
@@ -120,7 +120,7 @@ func (manager *Manager) UpdataUsers() {
 }
 
 func (manager *Manager) UpdateMainAddressAndProt(node_info *model.NodeInfo) {
-	if node_info.Sort == 11 {
+	if node_info.Sort == 11 || node_info.Sort == 12 {
 		if node_info.Server["port"] == "0" || node_info.Server["port"] == "" {
 			manager.MainAddress = "127.0.0.1"
 			manager.MainListenPort = 10550
@@ -144,7 +144,7 @@ func (manager *Manager) UpdateMainAddressAndProt(node_info *model.NodeInfo) {
 }
 func (m *Manager) AddMainInbound() error {
 	if m.NextNodeInfo.Server_raw != "" {
-		if m.NextNodeInfo.Sort == 11 {
+		if m.NextNodeInfo.Sort == 11 || m.NextNodeInfo.Sort == 12 {
 			m.UpdateMainAddressAndProt(m.NextNodeInfo)
 			var streamsetting *internet.StreamConfig
 			streamsetting = &internet.StreamConfig{}
@@ -178,7 +178,7 @@ func (m *Manager) AddMainInbound() error {
 }
 func (m *Manager) AddOuntBound(disnodeinfo *model.DisNodeInfo) error {
 	if disnodeinfo.Server_raw != "" {
-		if disnodeinfo.Sort == 11 {
+		if disnodeinfo.Sort == 11 || disnodeinfo.Sort == 12 {
 			var streamsetting *internet.StreamConfig
 			streamsetting = &internet.StreamConfig{}
 
@@ -207,10 +207,11 @@ func (m *Manager) AddOuntBound(disnodeinfo *model.DisNodeInfo) error {
 			}
 		}
 		if disnodeinfo.Sort == 0 {
-			if err := m.HandlerServiceClient.AddSSOutbound(m.Users[m.Id2PrefixedIdmap[disnodeinfo.UserId]], disnodeinfo.Server_raw+fmt.Sprintf("%d", disnodeinfo.UserId)); err == nil {
-				newErrorf("Successfully add user %s  outbound ", m.Id2PrefixedIdmap[disnodeinfo.UserId]).AtInfo().WriteToLog()
+			if err := m.HandlerServiceClient.AddSSOutbound(m.Users[m.Id2PrefixedIdmap[disnodeinfo.UserId]], disnodeinfo); err != nil {
+				return newError("User Chipter %S", m.Users[m.Id2PrefixedIdmap[disnodeinfo.UserId]].Method).Base(err)
 			} else {
-				newError(err).AtDebug().WriteToLog()
+				newErrorf("Successfully add user %s  outbound  %s ", m.Id2PrefixedIdmap[disnodeinfo.UserId], disnodeinfo.Server_raw).AtInfo().WriteToLog()
+
 			}
 		}
 		m.AddUserRule(disnodeinfo.Server_raw+fmt.Sprintf("%d", disnodeinfo.UserId), m.Users[m.Id2PrefixedIdmap[disnodeinfo.UserId]].Email)
@@ -220,7 +221,7 @@ func (m *Manager) AddOuntBound(disnodeinfo *model.DisNodeInfo) error {
 }
 func (m *Manager) AddUserRule(tag, email string) {
 	if err := m.UserRuleServiceClient.AddUserRelyRule(tag, []string{email}); err == nil {
-		newErrorf("Successfully remove user %s  %s server rule  ", email, tag).AtInfo().WriteToLog()
+		newErrorf("Successfully add user %s  %s server rule  ", email, tag).AtInfo().WriteToLog()
 	} else {
 		newError(err).AtDebug().WriteToLog()
 	}
@@ -236,7 +237,7 @@ func (m *Manager) RemoveUserRule(email string) {
 
 func (m *Manager) RemoveInbound() {
 	if m.CurrentNodeInfo.Server_raw != "" {
-		if m.CurrentNodeInfo.Sort == 11 {
+		if m.CurrentNodeInfo.Sort == 11 || m.CurrentNodeInfo.Sort == 12 {
 			m.UpdateMainAddressAndProt(m.CurrentNodeInfo)
 			if err := m.HandlerServiceClient.RemoveInbound(m.HandlerServiceClient.InboundTag); err != nil {
 				newError(err).AtWarning().WriteToLog()

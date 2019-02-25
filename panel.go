@@ -184,6 +184,7 @@ func (p *Panel) updateOutbounds() {
 		return
 	}
 	if len(data.Data) > 0 {
+		newErrorf("Recieve %d User Rules", len(data.Data)).AtInfo().WriteToLog()
 		globalSettingindex := -1
 		for index, value := range data.Data {
 			if value.UserId == 0 {
@@ -193,62 +194,100 @@ func (p *Panel) updateOutbounds() {
 		}
 		if globalSettingindex != -1 {
 			nextserver := data.Data[globalSettingindex]
+			newErrorf("Got A Global Rule %s ", nextserver.Server_raw).AtInfo().WriteToLog()
+			remove_count := 0
+			add_count := 0
 			for _, user := range p.manager.Users {
 				currentserver, find := p.manager.Id2DisServer[user.UserID]
 				nextserver.UserId = user.UserID
 				if find {
 					if currentserver != nextserver.Server_raw {
 						p.manager.RemoveOutBound(currentserver+fmt.Sprintf("%d", user.UserID), user.UserID)
-						p.manager.AddOuntBound(nextserver)
+						err := p.manager.AddOuntBound(nextserver)
+						if err != nil {
+							newError("ADDOUTBOUND ").Base(err).AtInfo().WriteToLog()
+						} else {
+
+							remove_count += 1
+							add_count += 1
+						}
 					}
 				} else {
-					p.manager.AddOuntBound(nextserver)
+					err := p.manager.AddOuntBound(nextserver)
+					if err != nil {
+						newError("ADDOUTBOUND ").Base(err).AtInfo().WriteToLog()
+					} else {
+						add_count += 1
+					}
 				}
 			}
-			for id, currentserver := range p.manager.Id2DisServer {
-				currenttag := currentserver + fmt.Sprintf("%d", id)
-				if currenttag == nextserver.Server_raw+fmt.Sprintf("%d", id) {
-					p.manager.RemoveOutBound(currenttag, id)
-				}
-			}
-
 			p.manager.Id2DisServer = map[uint]string{}
 			for _, user := range p.manager.Users {
 				p.manager.Id2DisServer[user.UserID] = nextserver.Server_raw
 			}
+			newErrorf("Add %d and REMOVE %d  Rules, Current Rules %d", add_count, remove_count, len(p.manager.Id2DisServer)).AtInfo().WriteToLog()
 
 		} else {
+			remove_count := 0
+			add_count := 0
 			for _, value := range data.Data {
-				currentserver, find := p.manager.Id2DisServer[value.UserId]
-				if find {
-					if currentserver != value.Server_raw {
-						p.manager.RemoveOutBound(currentserver+fmt.Sprintf("%d", value.UserId), value.UserId)
-						p.manager.AddOuntBound(value)
+				_, find := p.manager.Id2DisServer[value.UserId]
+				if !find {
+					err := p.manager.AddOuntBound(value)
+					if err != nil {
+						newError("ADDOUTBOUND ").Base(err).AtInfo().WriteToLog()
+					} else {
+						add_count += 1
 					}
-				} else {
-					p.manager.AddOuntBound(value)
 				}
 			}
 			for id, currentserver := range p.manager.Id2DisServer {
 				flag := false
 				currenttag := currentserver + fmt.Sprintf("%d", id)
 				for _, nextserver := range data.Data {
-					if currenttag == nextserver.Server_raw+fmt.Sprintf("%d", nextserver.UserId) {
+					if id == nextserver.UserId && currenttag == nextserver.Server_raw+fmt.Sprintf("%d", nextserver.UserId) {
+						flag = true
+						break
+					} else if id == nextserver.UserId && currenttag != nextserver.Server_raw+fmt.Sprintf("%d", nextserver.UserId) {
+						p.manager.RemoveOutBound(currenttag, id)
+						err := p.manager.AddOuntBound(nextserver)
+						if err != nil {
+							newError("ADDOUTBOUND ").Base(err).AtInfo().WriteToLog()
+						} else {
+							remove_count += 1
+							add_count += 1
+						}
 						flag = true
 						break
 					}
+					if !flag {
+						p.manager.RemoveOutBound(currenttag, id)
+						remove_count += 1
+					}
 				}
-				if !flag {
-					p.manager.RemoveOutBound(currenttag, id)
-				}
+
 			}
+
 			p.manager.Id2DisServer = map[uint]string{}
 			for _, nextserver := range data.Data {
 				p.manager.Id2DisServer[nextserver.UserId] = nextserver.Server_raw
 			}
+			newErrorf("Add %d and REMOVE %d  Rules, Current Rules %d", add_count, remove_count, len(p.manager.Id2DisServer)).AtInfo().WriteToLog()
+		}
+	} else {
+		newErrorf("There is No User Rules, Need To Remove %d RULEs", len(p.manager.Id2DisServer)).AtInfo().WriteToLog()
+		if len(p.manager.Id2DisServer) > 0 {
+			remove_count := 0
+			add_count := 0
+			for id, currentserver := range p.manager.Id2DisServer {
+				currenttag := currentserver + fmt.Sprintf("%d", id)
+				p.manager.RemoveOutBound(currenttag, id)
+				remove_count += 1
+			}
+			p.manager.Id2DisServer = map[uint]string{}
+			newErrorf("Add %d and REMOVE %d  Rules, Current Rules %d", add_count, remove_count, len(p.manager.Id2DisServer)).AtInfo().WriteToLog()
 
 		}
-
 	}
 
 }
