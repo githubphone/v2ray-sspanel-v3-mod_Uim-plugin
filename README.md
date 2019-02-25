@@ -184,7 +184,8 @@ config.json Example
     "services": [
       "HandlerService",
       "LoggerService",
-      "StatsService"
+      "StatsService",
+      "RuleService"
     ],
     "tag": "api"
   },
