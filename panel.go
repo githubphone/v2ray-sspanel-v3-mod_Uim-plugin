@@ -70,7 +70,7 @@ func (p *Panel) Start() {
 		runtime.GC()
 	}
 	c := cron.New()
-	err := c.AddFunc(fmt.Sprintf("@every %ds", p.manager.CheckRate), doFunc)
+	err := c.AddFunc(fmt.Sprintf("@every %dh", p.manager.CheckRate), doFunc)
 	if err != nil {
 		fatal(err)
 	}
