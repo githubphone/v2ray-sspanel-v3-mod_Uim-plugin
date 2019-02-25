@@ -70,12 +70,12 @@ func (p *Panel) Start() {
 		runtime.GC()
 	}
 	c := cron.New()
-	err := c.AddFunc(fmt.Sprintf("@every %dh", p.manager.CheckRate), doFunc)
+	err := c.AddFunc(fmt.Sprintf("@every %ds", p.manager.CheckRate), doFunc)
 	if err != nil {
 		fatal(err)
 	}
 	if p.manager.SpeedTestCheckRate > 0 {
-		newErrorf("@every %ds", p.manager.SpeedTestCheckRate).AtInfo().WriteToLog()
+		newErrorf("@every %dh", p.manager.SpeedTestCheckRate).AtInfo().WriteToLog()
 		err = c.AddFunc(fmt.Sprintf("@every %dh", p.manager.SpeedTestCheckRate), speedTestFunc)
 		if err != nil {
 			newError("Can't add speed test into cron").AtWarning().WriteToLog()
