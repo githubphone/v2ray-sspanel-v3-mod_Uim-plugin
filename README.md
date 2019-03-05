@@ -1,6 +1,7 @@
 # v2ray-sspanel-v3-mod_Uim-plugin
 
-
+## 公告
+1. 在完成限速功能后，该功能开始将会是收费版本(不在提供源码，只提供二进制文件，需要联系tg @ricobb 获取授权码)
 ## Thanks
 1. 感恩的 [ColetteContreras's repo](https://github.com/ColetteContreras/v2ray-ssrpanel-plugin). 让我一个go小白有了下手地。主要起始框架来源于这里
 2. 感恩 [eycorsican](https://github.com/eycorsican) 在v2ray-core [issue](https://github.com/v2ray/v2ray-core/issues/1514), 促成了go版本提上日程
