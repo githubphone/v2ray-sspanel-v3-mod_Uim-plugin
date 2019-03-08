@@ -285,7 +285,8 @@ config.json Example
     "checkRate": 60,
     "SpeedTestCheckRate": 6,
     "panelUrl": "xxxx",
-    "panelKey": "xxxx"
+    "panelKey": "xxxx",
+    "downWithPanel": 1
   }
 }
 ~~~
