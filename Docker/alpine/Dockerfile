@@ -2,7 +2,7 @@ FROM ubuntu:latest as builder
 
 LABEL maintainer="Rico <rico93@outlook.com>"
 
-ENV v2ray_version=4.18.0
+ENV v2ray_version=4.18.1
 
 RUN apt-get update
 RUN apt-get install curl -y
