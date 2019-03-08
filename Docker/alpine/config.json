@@ -100,6 +100,7 @@
     "checkRate": 60,
     "SpeedTestCheckRate": 6,
     "panelUrl": "https://google.com",
-    "panelKey": "55fUxDGFzH3n"
+    "panelKey": "55fUxDGFzH3n",
+    "downWithPanel": 1
   }
 }

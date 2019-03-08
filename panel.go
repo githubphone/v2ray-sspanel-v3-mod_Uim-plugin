@@ -18,6 +18,7 @@ type Panel struct {
 	db              *webapi.Webapi
 	manager         *Manager.Manager
 	speedtestClient speedtest.Client
+	downwithpanel   int
 }
 
 func NewPanel(gRPCConn *grpc.ClientConn, db *webapi.Webapi, cfg *config.Config) (*Panel, error) {
@@ -26,6 +27,7 @@ func NewPanel(gRPCConn *grpc.ClientConn, db *webapi.Webapi, cfg *config.Config) 
 	var newpanel = Panel{
 		speedtestClient: speedtestClient,
 		db:              db,
+		downwithpanel:   cfg.DownWithPanel,
 		manager: &Manager.Manager{
 			HandlerServiceClient:  client.NewHandlerServiceClient(gRPCConn, "MAIN_INBOUND"),
 			StatsServiceClient:    client.NewStatsServiceClient(gRPCConn),
@@ -86,8 +88,9 @@ func (p *Panel) Start() {
 }
 
 func (p *Panel) do() error {
-	p.updateManager()
-	p.updateThroughout()
+	if p.updateManager() {
+		p.updateThroughout()
+	}
 	return nil
 }
 func (p *Panel) initial() {
@@ -106,17 +109,21 @@ func (p *Panel) initial() {
 
 }
 
-func (p *Panel) updateManager() {
+func (p *Panel) updateManager() bool {
 	newNodeinfo, err := p.db.GetNodeInfo(p.manager.NodeID)
 	if err != nil {
 		newError(err).AtWarning().WriteToLog()
-		p.initial()
-		return
+		if p.downwithpanel == 1 {
+			p.initial()
+		}
+		return false
 	}
 	if newNodeinfo.Ret != 1 {
 		newError(newNodeinfo.Data).AtWarning().WriteToLog()
-		p.initial()
-		return
+		if p.downwithpanel == 1 {
+			p.initial()
+		}
+		return false
 	}
 	newErrorf("old node info %s ", p.manager.NextNodeInfo.Server_raw).AtInfo().WriteToLog()
 	newErrorf("new node info %s", newNodeinfo.Data.Server_raw).AtInfo().WriteToLog()
@@ -172,17 +179,22 @@ func (p *Panel) updateManager() {
 		newError("Start to check relay rules ").AtInfo().WriteToLog()
 		p.updateOutbounds()
 	}
+	return true
 }
 func (p *Panel) updateOutbounds() {
 	data, err := p.db.GetDisNodeInfo(p.manager.NodeID)
 	if err != nil {
 		newError(err).AtWarning().WriteToLog()
-		p.initial()
+		if p.downwithpanel == 1 {
+			p.initial()
+		}
 		return
 	}
 	if data.Ret != 1 {
 		newError(data.Data).AtWarning().WriteToLog()
-		p.initial()
+		if p.downwithpanel == 1 {
+			p.initial()
+		}
 		return
 	}
 	if len(data.Data) > 0 {
