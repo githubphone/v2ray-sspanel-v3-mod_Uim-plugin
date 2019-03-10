@@ -54,8 +54,8 @@ v2ray 后端 kcp、tcp、ws 都是多用户共用一个端口。
 xxxxx.com;10550;16;ws;;path=/v2ray|host=oxxxx.com
 
 // ws + tls (Caddy 提供)
-xxxxx.com;0;16;tls;ws;path=/v2ray|host=oxxxx.com|inside_port=10550
-xxxxx.com;;16;tls;ws;path=/v2ray|host=oxxxx.com|inside_port=10550
+xxxxx.com;0;16;tls;ws;path=/v2ray|host=Caddy tls的地址 |inside_port=10550
+xxxxx.com;;16;tls;ws;path=/v2ray|host=Caddy tls的地址|inside_port=10550
 
 
 
@@ -63,8 +63,8 @@ xxxxx.com;;16;tls;ws;path=/v2ray|host=oxxxx.com|inside_port=10550
 xxxxx.com;11120;16;ws;;path=/v2ray|host=oxxxx.com
 
 // nat🐔 ws + tls (Caddy 提供)
-xxxxx.com;0;16;tls;ws;path=/v2ray|host=oxxxx.com|inside_port=10550|outside_port=11120
-xxxxx.com;;16;tls;ws;path=/v2ray|host=oxxxx.com|inside_port=10550|outside_port=11120
+xxxxx.com;0;16;tls;ws;path=/v2ray|host=Caddy tls的地址|inside_port=10550|outside_port=11120
+xxxxx.com;;16;tls;ws;path=/v2ray|host=Caddy tls的地址|inside_port=10550|outside_port=11120
 ~~~
 
 目前的逻辑是
