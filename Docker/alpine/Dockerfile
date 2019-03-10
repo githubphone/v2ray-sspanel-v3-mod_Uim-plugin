@@ -37,4 +37,5 @@ CMD     sed -i "s|\"port\": 2333,|\"port\": ${api_port},|"  "/etc/v2ray/config.j
         sed -i "s/\"55fUxDGFzH3n\"/\"${key}\"/g" "/etc/v2ray/config.json" && \
         sed -i "s/123456/${node_id}/g" "/etc/v2ray/config.json" && \
         sed -i "s/\"SpeedTestCheckRate\": 6/\"SpeedTestCheckRate\": ${speedtest}/g" "/etc/v2ray/config.json" && \
+        sed -i "s/\"downWithPanel\": 6/\"downWithPanel\": ${downWithPanel}/g" "/etc/v2ray/config.json" && \
         v2ray -config=/etc/v2ray/config.json

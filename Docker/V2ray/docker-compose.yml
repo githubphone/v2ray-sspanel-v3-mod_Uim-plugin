@@ -11,6 +11,10 @@ services:
       speedtest: 6
       node_id: 10
       api_port: 2333
+      downWithPanel: 1
+      TZ: "Asia/Shanghai"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     logging:
       options:
         max-size: "10m"

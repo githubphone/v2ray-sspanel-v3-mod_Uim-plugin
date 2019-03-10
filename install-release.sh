@@ -282,6 +282,9 @@ installV2Ray(){
     copyFile v2ctl && makeExecutable v2ctl
     copyFile geoip.dat
     copyFile geosite.dat
+    colorEcho ${BLUE} "Setting TimeZone to Shanghai"
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+    date -s "$(curl -sI g.cn | grep Date | cut -d' ' -f3-6)Z"
 
     # Install V2Ray server config to /etc/v2ray
     if [[ ! -f "/etc/v2ray/config.json" ]]; then
