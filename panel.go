@@ -171,7 +171,7 @@ func (p *Panel) updateManager() bool {
 		p.manager.UpdataUsers()
 		newErrorf("After Update, Current Users %d need to be add %d need to be romved %d", len(p.manager.Users),
 			len(p.manager.UserToBeAdd), len(p.manager.UserToBeMoved)).AtWarning().WriteToLog()
-		p.manager.CurrentNodeInfo = p.manager.NextNodeInfo
+		p.manager.CopyNodeinfo()
 	} else {
 		newError("check ports finished. No need to update ").AtInfo().WriteToLog()
 	}

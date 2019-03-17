@@ -273,6 +273,19 @@ func (m *Manager) CopyUsers() {
 	m.UserToBeMoved = usertobemoved
 	m.UserToBeAdd = map[string]model.UserModel{}
 }
+func (m *Manager) CopyNodeinfo() {
+	jsonString, err := json.Marshal(m.NextNodeInfo)
+	if err != nil {
+		newError(err).AtWarning().WriteToLog()
+	}
+	currentnodeinfo := model.NodeInfo{}
+	err = json.Unmarshal(jsonString, &currentnodeinfo)
+	if err != nil {
+		newError(err).AtWarning().WriteToLog()
+	}
+	m.CurrentNodeInfo = &currentnodeinfo
+
+}
 func (m *Manager) UpdateServer() error {
 	m.CopyUsers()
 	m.UpdataUsers()
