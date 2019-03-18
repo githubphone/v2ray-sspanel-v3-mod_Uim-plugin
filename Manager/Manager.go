@@ -7,6 +7,8 @@ import (
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/model"
 	"strconv"
 	"v2ray.com/core/common/errors"
+	"v2ray.com/core/common/serial"
+	"v2ray.com/core/infra/conf"
 	"v2ray.com/core/transport/internet"
 )
 
@@ -158,7 +160,7 @@ func (m *Manager) AddMainInbound() error {
 				if m.NextNodeInfo.Server["host"] != "" {
 					host = m.NextNodeInfo.Server["host"].(string)
 				}
-				streamsetting = client.GetWebSocketStreamConfig(path, host)
+				streamsetting = client.GetWebSocketStreamConfig(path, host, nil)
 			} else if m.NextNodeInfo.Server["protocol"] == "kcp" || m.NextNodeInfo.Server["protocol"] == "mkcp" {
 				header_key := "noop"
 				if m.NextNodeInfo.Server["protocol_param"] != "" {
@@ -180,19 +182,27 @@ func (m *Manager) AddOuntBound(disnodeinfo *model.DisNodeInfo) error {
 	if disnodeinfo.Server_raw != "" {
 		if disnodeinfo.Sort == 11 || disnodeinfo.Sort == 12 {
 			var streamsetting *internet.StreamConfig
+			var tm *serial.TypedMessage
 			streamsetting = &internet.StreamConfig{}
 
 			if disnodeinfo.Server["protocol"] == "ws" {
 				host := "www.bing.com"
 				path := "/"
-				if m.NextNodeInfo.Server["path"] != "" {
+				if disnodeinfo.Server["path"] != "" {
 					path = disnodeinfo.Server["path"].(string)
 				}
-				if m.NextNodeInfo.Server["host"] != "" {
+				if disnodeinfo.Server["host"] != "" {
 					host = disnodeinfo.Server["host"].(string)
 				}
-				streamsetting = client.GetWebSocketStreamConfig(path, host)
-			} else if m.NextNodeInfo.Server["protocol"] == "kcp" || m.NextNodeInfo.Server["protocol"] == "mkcp" {
+				if disnodeinfo.Server["protocol_param"] == "tls" {
+					tlsconfig := &conf.TLSConfig{
+						InsecureCiphers: true,
+					}
+					cert, _ := tlsconfig.Build()
+					tm = serial.ToTypedMessage(cert)
+				}
+				streamsetting = client.GetWebSocketStreamConfig(path, host, tm)
+			} else if disnodeinfo.Server["protocol"] == "kcp" || disnodeinfo.Server["protocol"] == "mkcp" {
 				header_key := "noop"
 				if m.NextNodeInfo.Server["protocol_param"] != "" {
 					header_key = disnodeinfo.Server["protocol_param"].(string)
