@@ -7,12 +7,12 @@ import (
 )
 
 type UserRuleServerClient struct {
-	userruleservice.UserRuleServerClient
+	userruleservice.RuleServerClient
 }
 
 func NewUserRuleServerClient(client *grpc.ClientConn) *UserRuleServerClient {
 	return &UserRuleServerClient{
-		UserRuleServerClient: userruleservice.NewUserRuleServerClient(client),
+		RuleServerClient: userruleservice.NewRuleServerClient(client),
 	}
 }
 
