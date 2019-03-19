@@ -298,7 +298,7 @@ installV2Ray(){
 
         sed -i "s|"https://google.com"|"${PANELURL}"|g" "/etc/v2ray/config.json"
         sed -i "s/"55fUxDGFzH3n"/"${PANELKEY}"/g" "/etc/v2ray/config.json"
-        sed -i "s/20,/${NODEID},/g" "/etc/v2ray/config.json"
+        sed -i "s/123456,/${NODEID},/g" "/etc/v2ray/config.json"
 
         colorEcho ${BLUE} "PANELURL:${PANELURL}"
         colorEcho ${BLUE} "PANELKEY:${PANELKEY}"
