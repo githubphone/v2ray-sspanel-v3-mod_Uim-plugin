@@ -85,6 +85,33 @@ while [[ $# > 0 ]];do
         --nodeid)
         NODEID="$2"
         ;;
+        --downwithpanel)
+        DOWNWITHPANEL="$2"
+        ;;
+        --mysqlhost)
+        MYSQLHOST="$2"
+        ;;
+        --mysqldbname)
+        MYSQLDBNAME="$2"
+        ;;
+        --mysqluser)
+        MYSQLUSR="$2"
+        ;;
+        --mysqlpasswd)
+        MYSQLPASSWD="$2"
+        ;;
+        --mysqlport)
+        MYSQLPORT="$2"
+        ;;
+        --speedtestrate)
+        SPEEDTESTRATE="$2"
+        ;;
+        --paneltype)
+        PANELTYPE="$2"
+        ;;
+        --usemysql)
+        USEMYSQL="$2"
+        ;;
         *)
                 # unknown option
         ;;
@@ -128,9 +155,7 @@ downloadV2Ray(){
     rm -rf /tmp/v2ray
     mkdir -p /tmp/v2ray
     colorEcho ${BLUE} "Downloading V2Ray."
-    #DOWNLOAD_LINK="https://github.com/qkmy/v2ray-core/releases/download/${NEW_VER}/v2ray-linux-${VDIS}.zip"
-    #Cannot Get The Right Resources, if necessary you can change it to the leatestd release version.
-    DOWNLOAD_LINK="https://github.com/v2ray/v2ray-core/releases/download/v4.19.1/v2ray-linux-64.zip"
+    DOWNLOAD_LINK="https://github.com/rico93/pay-v2ray-sspanel-v3-mod_Uim-plugin/releases/download/${NEW_VER}/v2ray-linux-${VDIS}.zip"
     curl ${PROXY} -L -H "Cache-Control: no-cache" -o ${ZIPFILE} ${DOWNLOAD_LINK}
     if [ $? != 0 ];then
         colorEcho ${RED} "Failed to download! Please check your network or try again."
@@ -212,7 +237,7 @@ getVersion(){
         if [[ ${CUR_VER} != v* ]]; then
             CUR_VER=v${CUR_VER}
         fi
-        TAG_URL="https://api.github.com/repos/v2ray/v2ray-core/releases/latest"
+        TAG_URL="https://api.github.com/repos/rico93/pay-v2ray-sspanel-v3-mod_Uim-plugin/releases/latest"
         NEW_VER=`curl ${PROXY} -s ${TAG_URL} --connect-timeout 10| grep 'tag_name' | cut -d\" -f4`
         if [[ ${NEW_VER} != v* ]]; then
           NEW_VER=v${NEW_VER}
@@ -298,13 +323,80 @@ installV2Ray(){
             return 1
         fi
 
-        sed -i "s|"https://google.com"|"${PANELURL}"|g" "/etc/v2ray/config.json"
-        sed -i "s/"55fUxDGFzH3n"/"${PANELKEY}"/g" "/etc/v2ray/config.json"
-        sed -i "s/123456,/${NODEID},/g" "/etc/v2ray/config.json"
+        if [ ! -z "${PANELURL}" ]
+        then
+              sed -i "s|"https://google.com"|"${PANELURL}"|g" "/etc/v2ray/config.json"
+              colorEcho ${BLUE} "PANELURL:${PANELURL}"
+        fi
+        if [ ! -z "${PANELKEY}" ]
+        then
+               sed -i "s/"55fUxDGFzH3n"/"${PANELKEY}"/g" "/etc/v2ray/config.json"
+               colorEcho ${BLUE} "PANELKEY:${PANELKEY}"
 
-        colorEcho ${BLUE} "PANELURL:${PANELURL}"
-        colorEcho ${BLUE} "PANELKEY:${PANELKEY}"
-        colorEcho ${BLUE} "NODEID:${NODEID}"
+        fi
+        if [ ! -z "${NODEID}" ]
+        then
+                sed -i "s/123456,/${NODEID},/g" "/etc/v2ray/config.json"
+                colorEcho ${BLUE} "NODEID:${NODEID}"
+
+        fi
+
+        if [ ! -z "${DOWNWITHPANEL}" ]
+        then
+              sed -i "s|\"downWithPanel\": 1|\"downWithPanel\": ${DOWNWITHPANEL}|g" "/etc/v2ray/config.json"
+              colorEcho ${BLUE} "DOWNWITHPANEL:${DOWNWITHPANEL}"
+        fi
+
+        if [ ! -z "${MYSQLHOST}" ]
+        then
+                sed -i "s|"https://bing.com"|"${MYSQLHOST}"|g" "/etc/v2ray/config.json"
+               colorEcho ${BLUE} "MYSQLHOST:${MYSQLHOST}"
+
+        fi
+        if [ ! -z "${MYSQLDBNAME}" ]
+        then
+                sed -i "s/"demo_dbname"/"${MYSQLDBNAME}"/g" "/etc/v2ray/config.json"
+                colorEcho ${BLUE} "MYSQLDBNAME:${MYSQLDBNAME}"
+
+        fi
+        if [ ! -z "${MYSQLUSR}" ]
+        then
+              sed -i "s|\"demo_user\"|\"${MYSQLUSR}\"|g" "/etc/v2ray/config.json"
+              colorEcho ${BLUE} "MYSQLUSR:${MYSQLUSR}"
+        fi
+        if [ ! -z "${MYSQLPASSWD}" ]
+        then
+               sed -i "s/"demo_dbpassword"/"${MYSQLPASSWD}"/g" "/etc/v2ray/config.json"
+               colorEcho ${BLUE} "MYSQLPASSWD:${MYSQLPASSWD}"
+
+        fi
+        if [ ! -z "${MYSQLPORT}" ]
+        then
+                sed -i "s/3306,/${MYSQLPORT},/g" "/etc/v2ray/config.json"
+                colorEcho ${BLUE} "MYSQLPORT:${MYSQLPORT}"
+
+        fi
+
+        if [ ! -z "${SPEEDTESTRATE}" ]
+        then
+                sed -i "s|\"SpeedTestCheckRate\": 6|\"SpeedTestCheckRate\": ${SPEEDTESTRATE}|g" "/etc/v2ray/config.json"
+                colorEcho ${BLUE} "SPEEDTESTRATE:${SPEEDTESTRATE}"
+
+        fi
+        if [ ! -z "${PANELTYPE}" ]
+        then
+                sed -i "s|\"paneltype\": 0|\"paneltype\": ${PANELTYPE}|g" "/etc/v2ray/config.json"
+                colorEcho ${BLUE} "PANELTYPE:${PANELTYPE}"
+
+        fi
+        if [ ! -z "${USEMYSQL}" ]
+        then
+                sed -i "s|\"usemysql\": 0|\"usemysql\": ${USEMYSQL}|g" "/etc/v2ray/config.json"
+                colorEcho ${BLUE} "USEMYSQL:${USEMYSQL}"
+
+        fi
+
+
     fi
     return 0
 }
@@ -416,6 +508,9 @@ main(){
         colorEcho ${YELLOW} "Installing V2Ray via local file. Please make sure the file is a valid V2Ray package, as we are not able to determine that."
         NEW_VER=local
         installSoftware unzip || return $?
+        installSoftware "socat" || return $?
+        colorEcho  ${YELLOW} "Downloading acme.sh"
+        curl https://get.acme.sh | sh
         rm -rf /tmp/v2ray
         extract $LOCAL || return $?
         #FILEVDIS=`ls /tmp/v2ray |grep v2ray-v |cut -d "-" -f4`
@@ -432,6 +527,9 @@ main(){
     else
         # download via network and extract
         installSoftware "curl" || return $?
+        installSoftware "socat" || return $?
+        colorEcho  ${YELLOW} "Downloading acme.sh"
+        curl https://get.acme.sh | sh
         getVersion
         RETVAL="$?"
         if [[ $RETVAL == 0 ]] && [[ "$FORCE" != "1" ]]; then

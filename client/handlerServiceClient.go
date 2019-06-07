@@ -14,12 +14,15 @@ import (
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/common/uuid"
+	"v2ray.com/core/proxy/dokodemo"
+	"v2ray.com/core/proxy/freedom"
 	"v2ray.com/core/proxy/mtproto"
 	"v2ray.com/core/proxy/shadowsocks"
 	"v2ray.com/core/proxy/vmess"
 	"v2ray.com/core/proxy/vmess/inbound"
 	"v2ray.com/core/proxy/vmess/outbound"
 	"v2ray.com/core/transport/internet"
+	"v2ray.com/core/transport/internet/domainsocket"
 	"v2ray.com/core/transport/internet/headers/noop"
 	"v2ray.com/core/transport/internet/headers/srtp"
 	"v2ray.com/core/transport/internet/headers/tls"
@@ -63,18 +66,25 @@ func NewHandlerServiceClient(client *grpc.ClientConn, inboundTag string) *Handle
 }
 
 // user
-func (h *HandlerServiceClient) DelUser(email string) error {
+func (h *HandlerServiceClient) DelUser(user string) error {
 	req := &command.AlterInboundRequest{
 		Tag:       h.InboundTag,
-		Operation: serial.ToTypedMessage(&command.RemoveUserOperation{Email: email}),
+		Operation: serial.ToTypedMessage(&command.RemoveUserOperation{Email: user}),
 	}
 	return h.AlterInbound(req)
 }
 
-func (h *HandlerServiceClient) AddUser(user model.UserModel) error {
+func (h *HandlerServiceClient) AddVmessUser(user model.UserModel) error {
 	req := &command.AlterInboundRequest{
 		Tag:       h.InboundTag,
 		Operation: serial.ToTypedMessage(&command.AddUserOperation{User: h.ConvertVmessUser(user)}),
+	}
+	return h.AlterInbound(req)
+}
+func (h *HandlerServiceClient) AddDokodemoUser(user model.UserModel) error {
+	req := &command.AlterInboundRequest{
+		Tag:       h.InboundTag,
+		Operation: serial.ToTypedMessage(&command.AddUserOperation{User: h.ConverDokodemoUser(user)}),
 	}
 	return h.AlterInbound(req)
 }
@@ -150,6 +160,22 @@ func GetWebSocketStreamConfig(path string, host string, tm *serial.TypedMessage)
 	return &streamsetting
 }
 
+func GetDomainsocketStreamConfig(filepath string) *internet.StreamConfig {
+	var streamsetting internet.StreamConfig
+	streamsetting = internet.StreamConfig{
+		ProtocolName: "domainsocket",
+		TransportSettings: []*internet.TransportConfig{
+			&internet.TransportConfig{
+				ProtocolName: "domainsocket",
+				Settings: serial.ToTypedMessage(&domainsocket.Config{
+					Path: filepath,
+				}),
+			},
+		},
+	}
+	return &streamsetting
+}
+
 // different type inbounds
 func (h *HandlerServiceClient) AddVmessInbound(port uint16, address string, streamsetting *internet.StreamConfig) error {
 	var addinboundrequest command.AddInboundRequest
@@ -165,10 +191,11 @@ func (h *HandlerServiceClient) AddVmessInbound(port uint16, address string, stre
 				User: []*protocol.User{
 					{
 						Level: 0,
+						Rate:  0,
 						Email: "rico93@xxx.com",
 						Account: serial.ToTypedMessage(&vmess.Account{
 							Id:      protocol.NewID(uuid.New()).String(),
-							AlterId: 16,
+							AlterId: 2,
 						}),
 					},
 				},
@@ -236,6 +263,7 @@ func (h *HandlerServiceClient) AddMTInbound(port uint16, address string, streams
 					{
 						Level: 0,
 						Email: "rico93@xxx.com",
+						Rate:  0,
 						Account: serial.ToTypedMessage(&mtproto.Account{
 							Secret: utility.MD5(utility.GetRandomString(16)),
 						}),
@@ -246,14 +274,15 @@ func (h *HandlerServiceClient) AddMTInbound(port uint16, address string, streams
 	}
 	return h.AddInbound(&addinboundrequest)
 }
-func (h *HandlerServiceClient) AddSSInbound(user model.UserModel) error {
+func (h *HandlerServiceClient) AddSSInbound(user model.UserModel, address string, streamsetting *internet.StreamConfig) error {
 	var addinboundrequest command.AddInboundRequest
 	addinboundrequest = command.AddInboundRequest{
 		Inbound: &core.InboundHandlerConfig{
 			Tag: user.PrefixedId,
 			ReceiverSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
-				PortRange: net.SinglePortRange(net.Port(user.Port)),
-				Listen:    net.NewIPOrDomain(net.ParseAddress("0.0.0.0")),
+				PortRange:      net.SinglePortRange(net.Port(user.Port)),
+				Listen:         net.NewIPOrDomain(net.ParseAddress(address)),
+				StreamSettings: streamsetting,
 			}),
 			ProxySettings: serial.ToTypedMessage(&shadowsocks.ServerConfig{
 				User:    h.ConverSSUser(user),
@@ -263,6 +292,49 @@ func (h *HandlerServiceClient) AddSSInbound(user model.UserModel) error {
 	}
 	return h.AddInbound(&addinboundrequest)
 }
+
+func (h *HandlerServiceClient) AddDokodemoInbound(port uint16, address string, streamsetting *internet.StreamConfig) error {
+	var addinboundrequest command.AddInboundRequest
+	addinboundrequest = command.AddInboundRequest{
+		Inbound: &core.InboundHandlerConfig{
+			Tag: h.InboundTag,
+			ReceiverSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
+				PortRange:      net.SinglePortRange(net.Port(port)),
+				StreamSettings: streamsetting,
+			}),
+			ProxySettings: serial.ToTypedMessage(&dokodemo.Config{
+				Address:        net.NewIPOrDomain(net.ParseAddress("v1.mux.cool")),
+				Networks:       []net.Network{net.Network_TCP, net.Network_UDP},
+				FollowRedirect: false,
+				User: []*protocol.User{
+					{
+						Level: 0,
+						Rate:  0,
+						Email: "rico93@xxx.com",
+						Account: serial.ToTypedMessage(&dokodemo.Account{
+							Mu_Host: "rico",
+						}),
+					},
+				},
+			}),
+		},
+	}
+	return h.AddInbound(&addinboundrequest)
+}
+func (h *HandlerServiceClient) AddFreedomOutbound(tag string, streamsetting *internet.StreamConfig) error {
+	var addoutboundrequest command.AddOutboundRequest
+	addoutboundrequest = command.AddOutboundRequest{
+		Outbound: &core.OutboundHandlerConfig{
+			Tag: tag,
+			SenderSettings: serial.ToTypedMessage(&proxyman.SenderConfig{
+				StreamSettings: streamsetting,
+			}),
+			ProxySettings: serial.ToTypedMessage(&freedom.Config{}),
+		},
+	}
+	return h.AddOutbound(&addoutboundrequest)
+}
+
 func (h *HandlerServiceClient) AddInbound(req *command.AddInboundRequest) error {
 	_, err := h.HandlerServiceClient.AddInbound(context.Background(), req)
 	return err
@@ -290,6 +362,7 @@ func (h *HandlerServiceClient) ConvertVmessUser(userModel model.UserModel) *prot
 	return &protocol.User{
 		Level: 0,
 		Email: userModel.Email,
+		Rate:  userModel.Rate,
 		Account: serial.ToTypedMessage(&vmess.Account{
 			Id:      userModel.Uuid,
 			AlterId: userModel.AlterId,
@@ -299,10 +372,21 @@ func (h *HandlerServiceClient) ConvertVmessUser(userModel model.UserModel) *prot
 		}),
 	}
 }
+func (h *HandlerServiceClient) ConverDokodemoUser(userModel model.UserModel) *protocol.User {
+	return &protocol.User{
+		Level: 0,
+		Email: userModel.Email,
+		Rate:  userModel.Rate,
+		Account: serial.ToTypedMessage(&dokodemo.Account{
+			Mu_Host: userModel.Muhost,
+		}),
+	}
+}
 func (h *HandlerServiceClient) ConverSSUser(userModel model.UserModel) *protocol.User {
 	return &protocol.User{
 		Level: 0,
 		Email: userModel.Email,
+		Rate:  userModel.Rate,
 		Account: serial.ToTypedMessage(&shadowsocks.Account{
 			Password:   userModel.Passwd,
 			CipherType: CipherTypeMap[strings.ToLower(userModel.Method)],
@@ -315,6 +399,7 @@ func (h *HandlerServiceClient) ConverMTUser(userModel model.UserModel) *protocol
 	return &protocol.User{
 		Level: 0,
 		Email: userModel.Email,
+		Rate:  userModel.Rate,
 		Account: serial.ToTypedMessage(&mtproto.Account{
 			Secret: utility.MD5(userModel.Uuid),
 		}),

@@ -5,9 +5,9 @@ import (
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/Manager"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/client"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/config"
+	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/db"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/model"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/speedtest"
-	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/webapi"
 	"github.com/robfig/cron"
 	"google.golang.org/grpc"
 	"reflect"
@@ -15,13 +15,13 @@ import (
 )
 
 type Panel struct {
-	db              *webapi.Webapi
+	db              db.Db
 	manager         *Manager.Manager
 	speedtestClient speedtest.Client
 	downwithpanel   int
 }
 
-func NewPanel(gRPCConn *grpc.ClientConn, db *webapi.Webapi, cfg *config.Config) (*Panel, error) {
+func NewPanel(gRPCConn *grpc.ClientConn, db db.Db, cfg *config.Config) (*Panel, error) {
 	opts := speedtest.NewOpts()
 	speedtestClient := speedtest.NewClient(opts)
 	var newpanel = Panel{
@@ -29,19 +29,19 @@ func NewPanel(gRPCConn *grpc.ClientConn, db *webapi.Webapi, cfg *config.Config) 
 		db:              db,
 		downwithpanel:   cfg.DownWithPanel,
 		manager: &Manager.Manager{
-			HandlerServiceClient:  client.NewHandlerServiceClient(gRPCConn, "MAIN_INBOUND"),
-			StatsServiceClient:    client.NewStatsServiceClient(gRPCConn),
-			UserRuleServiceClient: client.NewUserRuleServerClient(gRPCConn),
-			NodeID:                cfg.NodeID,
-			CheckRate:             cfg.CheckRate,
-			SpeedTestCheckRate:    cfg.SpeedTestCheckRate,
-			CurrentNodeInfo:       &model.NodeInfo{},
-			NextNodeInfo:          &model.NodeInfo{},
-			Users:                 map[string]model.UserModel{},
-			UserToBeMoved:         map[string]model.UserModel{},
-			UserToBeAdd:           map[string]model.UserModel{},
-			Id2PrefixedIdmap:      map[uint]string{},
-			Id2DisServer:          map[uint]string{},
+			HandlerServiceClient: client.NewHandlerServiceClient(gRPCConn, "MAIN_INBOUND"),
+			StatsServiceClient:   client.NewStatsServiceClient(gRPCConn),
+			RuleServiceClient:    client.NewRuleServerClient(gRPCConn),
+			NodeID:               cfg.NodeID,
+			CheckRate:            cfg.CheckRate,
+			SpeedTestCheckRate:   cfg.SpeedTestCheckRate,
+			CurrentNodeInfo:      &model.NodeInfo{},
+			NextNodeInfo:         &model.NodeInfo{},
+			Users:                map[string]model.UserModel{},
+			UserToBeMoved:        map[string]model.UserModel{},
+			UserToBeAdd:          map[string]model.UserModel{},
+			Id2PrefixedIdmap:     map[uint]string{},
+			Id2DisServer:         map[uint]string{},
 		},
 	}
 	return &newpanel, nil
@@ -77,7 +77,7 @@ func (p *Panel) Start() {
 		fatal(err)
 	}
 	if p.manager.SpeedTestCheckRate > 0 {
-		newErrorf("@every %dh", p.manager.SpeedTestCheckRate).AtInfo().WriteToLog()
+		newErrorf("SpeedTest @every %dh", p.manager.SpeedTestCheckRate).AtInfo().WriteToLog()
 		err = c.AddFunc(fmt.Sprintf("@every %dh", p.manager.SpeedTestCheckRate), speedTestFunc)
 		if err != nil {
 			newError("Can't add speed test into cron").AtWarning().WriteToLog()
@@ -112,14 +112,14 @@ func (p *Panel) initial() {
 func (p *Panel) updateManager() bool {
 	newNodeinfo, err := p.db.GetNodeInfo(p.manager.NodeID)
 	if err != nil {
-		newError(err).AtWarning().WriteToLog()
+		newError("Can't get nodeinfo").Base(err).AtWarning().WriteToLog()
 		if p.downwithpanel == 1 {
 			p.initial()
 		}
 		return false
 	}
 	if newNodeinfo.Ret != 1 {
-		newError(newNodeinfo.Data).AtWarning().WriteToLog()
+		newError("please check your setting nodata finded").AtWarning().WriteToLog()
 		if p.downwithpanel == 1 {
 			p.initial()
 		}

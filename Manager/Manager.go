@@ -1,34 +1,47 @@
 package Manager
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/client"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/model"
+	"os"
+	"os/exec"
+	"os/user"
 	"strconv"
 	"v2ray.com/core/common/errors"
+	"v2ray.com/core/common/net"
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/infra/conf"
 	"v2ray.com/core/transport/internet"
 )
 
 type Manager struct {
-	HandlerServiceClient  *client.HandlerServiceClient
-	StatsServiceClient    *client.StatsServiceClient
-	UserRuleServiceClient *client.UserRuleServerClient
-	CurrentNodeInfo       *model.NodeInfo
-	NextNodeInfo          *model.NodeInfo
-	UserChanged           bool
-	UserToBeMoved         map[string]model.UserModel
-	UserToBeAdd           map[string]model.UserModel
-	Users                 map[string]model.UserModel
-	Id2PrefixedIdmap      map[uint]string
-	Id2DisServer          map[uint]string
-	MainAddress           string
-	MainListenPort        uint16
-	NodeID                uint
-	CheckRate             int
-	SpeedTestCheckRate    int
+	HandlerServiceClient *client.HandlerServiceClient
+	StatsServiceClient   *client.StatsServiceClient
+	RuleServiceClient    *client.RuleServerClient
+	CurrentNodeInfo      *model.NodeInfo
+	NextNodeInfo         *model.NodeInfo
+	UserChanged          bool
+	UserToBeMoved        map[string]model.UserModel
+	UserToBeAdd          map[string]model.UserModel
+	Users                map[string]model.UserModel
+	Id2PrefixedIdmap     map[uint]string
+	Id2DisServer         map[uint]string
+	MainAddress          string
+	MainListenPort       uint16
+	NodeID               uint
+	CheckRate            int
+	SpeedTestCheckRate   int
+}
+
+func homeDir() string {
+	usr, err := user.Current()
+	if err != nil {
+		os.Exit(1)
+	}
+	return usr.HomeDir
 }
 
 func (manager *Manager) GetUsers() map[string]model.UserModel {
@@ -53,16 +66,22 @@ func (manager *Manager) Remove(prefixedId string) bool {
 func (manager *Manager) UpdataUsers() {
 	var successfully_removed, successfully_add []string
 	if manager.CurrentNodeInfo.Server_raw != "" {
-		if manager.CurrentNodeInfo.Sort == 0 {
+		if manager.CurrentNodeInfo.Sort == 0 || manager.CurrentNodeInfo.Sort == 13 {
 			// SS server
 			/// remove inbounds
 			for key, value := range manager.UserToBeMoved {
 				if err := manager.HandlerServiceClient.RemoveInbound(value.PrefixedId); err == nil {
-					newErrorf("Successfully remove user %s ", key).AtInfo().WriteToLog()
+					newErrorf("Successfully remove user %s", key).AtInfo().WriteToLog()
 					successfully_removed = append(successfully_removed, key)
 				} else {
 					newError(err).AtDebug().WriteToLog()
 					successfully_removed = append(successfully_removed, key)
+				}
+				if manager.CurrentNodeInfo.Sort == 13 {
+					newErrorf("Remove AttrMachter %s", value.Muhost).AtInfo().WriteToLog()
+					manager.HandlerServiceClient.RemoveOutbound("out_" + value.Muhost)
+					manager.RuleServiceClient.RemveUserAttrMachter("out_" + value.Muhost)
+					manager.HandlerServiceClient.DelUser(value.Muhost)
 				}
 			}
 		} else if manager.CurrentNodeInfo.Sort == 11 || manager.CurrentNodeInfo.Sort == 12 {
@@ -81,11 +100,19 @@ func (manager *Manager) UpdataUsers() {
 
 	}
 	if manager.NextNodeInfo.Server_raw != "" {
-		if manager.NextNodeInfo.Sort == 0 {
+		if manager.NextNodeInfo.Sort == 0 || manager.NextNodeInfo.Sort == 13 {
 			// SS server
 			/// add inbounds
 			for key, value := range manager.UserToBeAdd {
-				if err := manager.HandlerServiceClient.AddSSInbound(value); err == nil {
+				var streamsetting *internet.StreamConfig
+				if manager.NextNodeInfo.Sort == 13 {
+					newErrorf("ADD WS+SS %s  %s", key, value.Muhost).AtInfo().WriteToLog()
+					streamsetting = client.GetDomainsocketStreamConfig(fmt.Sprintf("/etc/v2ray/%s.sock", value.Muhost))
+					manager.RuleServiceClient.AddUserAttrMachter("out_"+value.Muhost, fmt.Sprintf("attrs['host'] == '%s'", value.Muhost))
+					manager.HandlerServiceClient.AddFreedomOutbound("out_"+value.Muhost, streamsetting)
+					manager.HandlerServiceClient.AddDokodemoUser(value)
+				}
+				if err := manager.HandlerServiceClient.AddSSInbound(value, "0.0.0.0", streamsetting); err == nil {
 					newErrorf("Successfully add user %s ", key).AtInfo().WriteToLog()
 					successfully_add = append(successfully_add, key)
 				} else {
@@ -97,7 +124,7 @@ func (manager *Manager) UpdataUsers() {
 			// VMESS
 			// add users
 			for key, value := range manager.UserToBeAdd {
-				if err := manager.HandlerServiceClient.AddUser(value); err == nil {
+				if err := manager.HandlerServiceClient.AddVmessUser(value); err == nil {
 					newErrorf("Successfully add user %s ", key).AtInfo().WriteToLog()
 					successfully_add = append(successfully_add, key)
 				} else {
@@ -122,7 +149,7 @@ func (manager *Manager) UpdataUsers() {
 }
 
 func (manager *Manager) UpdateMainAddressAndProt(node_info *model.NodeInfo) {
-	if node_info.Sort == 11 || node_info.Sort == 12 {
+	if node_info.Sort == 11 || node_info.Sort == 12 || node_info.Sort == 13 {
 		if node_info.Server["port"] == "0" || node_info.Server["port"] == "" {
 			manager.MainAddress = "127.0.0.1"
 			manager.MainListenPort = 10550
@@ -144,11 +171,86 @@ func (manager *Manager) UpdateMainAddressAndProt(node_info *model.NodeInfo) {
 		}
 	}
 }
+func (m *Manager) AddCert(server string) (*serial.TypedMessage, error) {
+	var tlsconfig *conf.TLSConfig
+	newError("Starting Issuing Tls Cert, please make sure 80 is free").AtInfo().WriteToLog()
+	//cmd := exec.Command(fmt.Sprintf("command: %s %s %s %s", fmt.Sprintf("%s/.acme.sh/acme.sh", homeDir()), "--issue", fmt.Sprintf("-d %s", server), "--standalone"))
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("%s/.acme.sh/acme.sh --issue -d %s --standalone", homeDir(), server))
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	cmd.Run()
+	newError(out.String()).AtInfo().WriteToLog()
+	newError(stderr.String()).AtInfo().WriteToLog()
+	tlsconfig = &conf.TLSConfig{
+		Certs: []*conf.TLSCertConfig{&conf.TLSCertConfig{
+			CertFile: fmt.Sprintf("%s/.acme.sh/%s/fullchain.cer", homeDir(), server),
+			KeyFile:  fmt.Sprintf("%[1]s/.acme.sh/%[2]s/%[2]s.key", homeDir(), server),
+		}},
+		InsecureCiphers: true,
+	}
+	cert, err := tlsconfig.Build()
+	if err != nil {
+		return nil, newError("Failed to build TLS config.").Base(err)
+	}
+	tm := serial.ToTypedMessage(cert)
+	return tm, nil
+
+}
+func (m *Manager) StopCert(server string) error {
+	newErrorf("Starting to remove %s from renew list", server).AtInfo().WriteToLog()
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("%s/.acme.sh/acme.sh --remove -d %s", homeDir(), server))
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	cmd.Run()
+	newError(out.String()).AtInfo().WriteToLog()
+	newError(stderr.String()).AtInfo().WriteToLog()
+	//newErrorf("Starting Remove  %s certs", server).AtInfo().WriteToLog()
+	//cmd = exec.Command("rm", "-rf", fmt.Sprintf("%s/.acme.sh/%s/fullchain.cer", homeDir(), server), fmt.Sprintf("%[1]s/.acme.sh/%[2]s/%[2]s.key", homeDir(), server))
+	//cmd.Stdout = &out
+	//cmd.Stderr = &stderr
+	//cmd.Run()
+	//newError(out.String()).AtInfo().WriteToLog()
+	//newError(stderr.String()).AtInfo().WriteToLog()
+	return nil
+}
 func (m *Manager) AddMainInbound() error {
 	if m.NextNodeInfo.Server_raw != "" {
-		if m.NextNodeInfo.Sort == 11 || m.NextNodeInfo.Sort == 12 {
+		if m.NextNodeInfo.Sort == 13 {
 			m.UpdateMainAddressAndProt(m.NextNodeInfo)
 			var streamsetting *internet.StreamConfig
+			var tm *serial.TypedMessage
+			if m.NextNodeInfo.Server["protocol"] == "ws" {
+				host := "www.bing.com"
+				path := "/"
+				if m.NextNodeInfo.Server["path"] != "" {
+					path = m.NextNodeInfo.Server["path"].(string)
+				}
+				if m.NextNodeInfo.Server["host"] != "" {
+					host = m.NextNodeInfo.Server["host"].(string)
+				}
+				if m.NextNodeInfo.Server["protocol_param"] == "tls" && m.MainAddress == "0.0.0.0" {
+					if m.NextNodeInfo.Server["server"] != "" {
+						tm, _ = m.AddCert(m.NextNodeInfo.Server["server"].(string))
+					} else if net.ParseAddress(m.NextNodeInfo.Server["server_address"].(string)).Family() == net.AddressFamilyDomain {
+						tm, _ = m.AddCert(m.NextNodeInfo.Server["server_address"].(string))
+					}
+				}
+				streamsetting = client.GetWebSocketStreamConfig(path, host, tm)
+			}
+			if err := m.HandlerServiceClient.AddDokodemoInbound(m.MainListenPort, m.MainAddress, streamsetting); err != nil {
+				return err
+			} else {
+				newErrorf("Successfully add MAIN DokodemoInbound %s port %d", m.MainAddress, m.MainListenPort).AtInfo().WriteToLog()
+			}
+		} else if m.NextNodeInfo.Sort == 11 || m.NextNodeInfo.Sort == 12 {
+			m.UpdateMainAddressAndProt(m.NextNodeInfo)
+			var streamsetting *internet.StreamConfig
+			var tm *serial.TypedMessage
+			//var err error
 			streamsetting = &internet.StreamConfig{}
 
 			if m.NextNodeInfo.Server["protocol"] == "ws" {
@@ -160,7 +262,14 @@ func (m *Manager) AddMainInbound() error {
 				if m.NextNodeInfo.Server["host"] != "" {
 					host = m.NextNodeInfo.Server["host"].(string)
 				}
-				streamsetting = client.GetWebSocketStreamConfig(path, host, nil)
+				if m.NextNodeInfo.Server["protocol_param"] == "tls" && m.MainAddress == "0.0.0.0" {
+					if m.NextNodeInfo.Server["server"] != "" {
+						tm, _ = m.AddCert(m.NextNodeInfo.Server["server"].(string))
+					} else if net.ParseAddress(m.NextNodeInfo.Server["server_address"].(string)).Family() == net.AddressFamilyDomain {
+						tm, _ = m.AddCert(m.NextNodeInfo.Server["server_address"].(string))
+					}
+				}
+				streamsetting = client.GetWebSocketStreamConfig(path, host, tm)
 			} else if m.NextNodeInfo.Server["protocol"] == "kcp" || m.NextNodeInfo.Server["protocol"] == "mkcp" {
 				header_key := "noop"
 				if m.NextNodeInfo.Server["protocol_param"] != "" {
@@ -204,7 +313,7 @@ func (m *Manager) AddOuntBound(disnodeinfo *model.DisNodeInfo) error {
 				streamsetting = client.GetWebSocketStreamConfig(path, host, tm)
 			} else if disnodeinfo.Server["protocol"] == "kcp" || disnodeinfo.Server["protocol"] == "mkcp" {
 				header_key := "noop"
-				if m.NextNodeInfo.Server["protocol_param"] != "" {
+				if disnodeinfo.Server["protocol_param"] != "" {
 					header_key = disnodeinfo.Server["protocol_param"].(string)
 				}
 				streamsetting = client.GetKcpStreamConfig(header_key)
@@ -230,7 +339,7 @@ func (m *Manager) AddOuntBound(disnodeinfo *model.DisNodeInfo) error {
 	return nil
 }
 func (m *Manager) AddUserRule(tag, email string) {
-	if err := m.UserRuleServiceClient.AddUserRelyRule(tag, []string{email}); err == nil {
+	if err := m.RuleServiceClient.AddUserRelyRule(tag, []string{email}); err == nil {
 		newErrorf("Successfully add user %s  %s server rule  ", email, tag).AtInfo().WriteToLog()
 	} else {
 		newError(err).AtDebug().WriteToLog()
@@ -238,7 +347,7 @@ func (m *Manager) AddUserRule(tag, email string) {
 }
 func (m *Manager) RemoveUserRule(email string) {
 
-	if err := m.UserRuleServiceClient.RemveUserRelayRule([]string{email}); err == nil {
+	if err := m.RuleServiceClient.RemveUserRelayRule([]string{email}); err == nil {
 		newErrorf("Successfully remove user %s  rule", email).AtInfo().WriteToLog()
 	} else {
 		newError(err).AtDebug().WriteToLog()
@@ -247,12 +356,21 @@ func (m *Manager) RemoveUserRule(email string) {
 
 func (m *Manager) RemoveInbound() {
 	if m.CurrentNodeInfo.Server_raw != "" {
-		if m.CurrentNodeInfo.Sort == 11 || m.CurrentNodeInfo.Sort == 12 {
+		if m.CurrentNodeInfo.Sort == 11 || m.CurrentNodeInfo.Sort == 12 || m.CurrentNodeInfo.Sort == 13 {
 			m.UpdateMainAddressAndProt(m.CurrentNodeInfo)
 			if err := m.HandlerServiceClient.RemoveInbound(m.HandlerServiceClient.InboundTag); err != nil {
 				newError(err).AtWarning().WriteToLog()
 			} else {
 				newErrorf("Successfully remove main inbound %s", m.HandlerServiceClient.InboundTag).AtInfo().WriteToLog()
+			}
+			if m.CurrentNodeInfo.Server["protocol_param"] == "tls" && m.MainAddress == "0.0.0.0" {
+				newError("Starting to Rmove Cert").AtInfo().WriteToLog()
+				if m.CurrentNodeInfo.Server["server"] != "" {
+					m.StopCert(m.CurrentNodeInfo.Server["server"].(string))
+				} else if net.ParseAddress(m.CurrentNodeInfo.Server["server_address"].(string)).Family() == net.AddressFamilyDomain {
+					m.StopCert(m.CurrentNodeInfo.Server["server_address"].(string))
+				}
+
 			}
 		}
 	}

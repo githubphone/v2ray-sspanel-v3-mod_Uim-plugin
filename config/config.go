@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/go-sql-driver/mysql"
 	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/utility"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 	"v2ray.com/core/common/errors"
 	"v2ray.com/core/common/platform"
 	"v2ray.com/core/infra/conf"
@@ -33,13 +35,49 @@ var (
 	_          = CommandLine.Bool("plugin", false, "True to load plugins.")
 )
 
+type MySQLConfig struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	DBName   string `json:"dbname"`
+}
+
+func (c *MySQLConfig) FormatDSN() (string, error) {
+	loc, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		return "", err
+	}
+
+	cc := &mysql.Config{
+		Collation:            "utf8mb4_unicode_ci",
+		User:                 c.User,
+		Passwd:               c.Password,
+		Loc:                  loc,
+		DBName:               c.DBName,
+		Net:                  "tcp",
+		Addr:                 fmt.Sprintf("%s:%d", c.Host, c.Port),
+		AllowNativePasswords: true,
+		ParseTime:            true,
+	}
+
+	return cc.FormatDSN(), nil
+}
+
 type Config struct {
-	NodeID             uint   `json:"nodeId"`
-	CheckRate          int    `json:"checkRate"`
-	PanelUrl           string `json:"panelUrl"`
-	PanelKey           string `json:"panelKey"`
-	SpeedTestCheckRate int    `json:"speedTestCheckrate"`
-	DownWithPanel      int    `json:"downWithPanel"`
+	NodeID             uint         `json:"nodeId"`
+	CheckRate          int          `json:"checkRate"`
+	PanelUrl           string       `json:"panelUrl"`
+	PanelKey           string       `json:"panelKey"`
+	SpeedTestCheckRate int          `json:"speedTestCheckrate"`
+	DownWithPanel      int          `json:"downWithPanel"`
+	MySQL              *MySQLConfig `json:"mysql"`
+	Paneltype          int          `json:"paneltype"`
+	Usemysql           int          `json:"usemysql"`
+	MU_REGEX           string       `json:"mu_regex"`
+	MU_SUFFIX          string       `json:"mu_suffix"`
+	GoPanelKey         string       `json:"go_panel_key"`
+	GoPanelHost        string       `json:"go_panel_host"`
 	V2rayConfig        *conf.Config
 }
 

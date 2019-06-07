@@ -108,8 +108,36 @@ error_detect_depends(){
 
 # Pre-installation settings
 pre_install_docker_compose(){
-    # Set ssrpanel_url
-    echo "Please ssrpanel_url"
+    echo "Which Panel Do you use SSpanel 0， SSRpanel 1"
+    read -p "(v2ray_paneltype (Default 0):" v2ray_paneltype
+    [ -z "${v2ray_paneltype}" ] && v2ray_paneltype=0
+    echo
+    echo "---------------------------"
+    echo "v2ray_paneltype = ${v2ray_paneltype}"
+    echo "---------------------------"
+    echo
+    # Set ssrpanel node_id
+    echo "node_id"
+    read -p "(Default value: 0 ):" ssrpanel_node_id
+    [ -z "${ssrpanel_node_id}" ] && ssrpanel_node_id=0
+    echo
+    echo "---------------------------"
+    echo "node_id = ${ssrpanel_node_id}"
+    echo "---------------------------"
+    echo
+
+
+    echo "Which connection do you prefer 0 for webapi and 1 for mysql"
+    read -p "(v2ray_usemysql (Default 0):" v2ray_usemysql
+    [ -z "${v2ray_usemysql}" ] && v2ray_usemysql=0
+    echo
+    echo "---------------------------"
+    echo "v2ray_usemysql = ${v2ray_usemysql}"
+    echo "---------------------------"
+    echo
+
+      # Set ssrpanel_url
+    echo "Please sspanel_url, u can pass this setting if u use mysql"
     read -p "(There is no default value please make sure you input the right thing):" ssrpanel_url
     [ -z "${ssrpanel_url}" ]
     echo
@@ -118,7 +146,7 @@ pre_install_docker_compose(){
     echo "---------------------------"
     echo
     # Set ssrpanel key
-    echo "ssrpanel key"
+    echo "sspanel key  u can pass this setting if u use mysql"
     read -p "(There is no default value please make sure you input the right thing):" ssrpanel_key
     [ -z "${ssrpanel_key}" ]
     echo
@@ -126,10 +154,56 @@ pre_install_docker_compose(){
     echo "ssrpanel_key = ${ssrpanel_key}"
     echo "---------------------------"
     echo
+   # Set Setting if the node go downwith panel
+    echo "Setting Myqlhost,  u can pass this setting u chosen use webapi"
+    read -p "(v2ray_downWithPanel :" v2ray_mysqlhost
+    [ -z "${v2ray_mysqlhost}" ] && v2ray_mysqlhost=""
+    echo
+    echo "---------------------------"
+    echo "v2ray_mysqlhost = ${v2ray_mysqlhost}"
+    echo "---------------------------"
+    echo
+    # Set Setting if the node go downwith panel
+    echo "Setting MysqlPort u can pass this setting u chosen use webapi"
+    read -p "(v2ray_mysqlport (Default 3306):" v2ray_mysqlport
+    [ -z "${v2ray_mysqlport}" ] && v2ray_mysqlport=3306
+    echo
+    echo "---------------------------"
+    echo "v2ray_mysqlport = ${v2ray_mysqlport}"
+    echo "---------------------------"
+    echo
+    # Set Setting if the node go downwith panel
+    echo "Setting MysqlUser u can pass this setting if u use webapi"
+    read -p "(v2ray_myqluser (Default root):" v2ray_myqluser
+    [ -z "${v2ray_myqluser}" ] && v2ray_myqluser="root"
+    echo
+    echo "---------------------------"
+    echo "v2ray_myqluser = ${v2ray_myqluser}"
+    echo "---------------------------"
+    echo
+    # Set Setting if the node go downwith panel
+    echo "Setting MysqlPassword u can pass this setting if u use webapi"
+    read -p "(v2ray_mysqlpassword (Default 1):" v2ray_mysqlpassword
+    [ -z "${v2ray_mysqlpassword}" ] && v2ray_mysqlpassword=1
+    echo
+    echo "---------------------------"
+    echo "v2ray_mysqlpassword = ${v2ray_mysqlpassword}"
+    echo "---------------------------"
+    echo
+    # Set Setting if the node go downwith panel
+    echo "Setting MysqlDbname u can pass this setting u chosen use webapi"
+    read -p "(v2ray_mysqldbname (Default sspanel):" v2ray_mysqldbname
+    [ -z "${v2ray_mysqldbname}" ] && v2ray_mysqldbname="sspanel"
+    echo
+    echo "---------------------------"
+    echo "v2ray_mysqldbname = ${v2ray_mysqldbname}"
+    echo "---------------------------"
+    echo
+
 
     # Set ssrpanel speedtest function
-    echo "use ssrpanel speedtest"
-    read -p "(ssrpanel speedtest: Default (6) hours every time):" ssrpanel_speedtest
+    echo "use sspanel speedtest"
+    read -p "(sspanel speedtest: Default (6) hours every time):" ssrpanel_speedtest
     [ -z "${ssrpanel_speedtest}" ] && ssrpanel_speedtest=6
     echo
     echo "---------------------------"
@@ -137,23 +211,13 @@ pre_install_docker_compose(){
     echo "---------------------------"
     echo
 
-    # Set ssrpanel node_id
-    echo "ssrpanel node_id"
-    read -p "(Default value: 0 ):" ssrpanel_node_id
-    [ -z "${ssrpanel_node_id}" ] && ssrpanel_node_id=0
-    echo
-    echo "---------------------------"
-    echo "ssrpanel_node_id = ${ssrpanel_node_id}"
-    echo "---------------------------"
-    echo
-
     # Set V2ray backend API Listen port
-    echo "Setting V2ray backend API Listen port"
-    read -p "(V2ray API Listen port(Default 2333):" v2ray_api_port
+    echo "Setting V2ray Grpc API Listen port"
+    read -p "(V2ray Grpc API Listen port(Default 2333):" v2ray_api_port
     [ -z "${v2ray_api_port}" ] && v2ray_api_port=2333
     echo
     echo "---------------------------"
-    echo "V2ray API Listen port = ${v2ray_api_port}"
+    echo "V2ray Grpc API Listen port = ${v2ray_api_port}"
     echo "---------------------------"
     echo
 
@@ -166,6 +230,9 @@ pre_install_docker_compose(){
     echo "v2ray_downWithPanel = ${v2ray_downWithPanel}"
     echo "---------------------------"
     echo
+
+    # Set Setting if the node go downwith panel
+
 }
 
 pre_install_caddy(){
@@ -232,13 +299,20 @@ config_docker(){
     echo "install curl"
     install_dependencies
     echo "Writing docker-compose.yml"
-    curl -L https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/master/Docker/V2ray/docker-compose.yml > docker-compose.yml
+    curl -L https://raw.githubusercontent.com/rico93/pay-v2ray-sspanel-v3-mod_Uim-plugin/master/Docker/V2ray/docker-compose.yml > docker-compose.yml
     sed -i "s|node_id:.*|node_id: ${ssrpanel_node_id}|"  ./docker-compose.yml
     sed -i "s|sspanel_url:.*|sspanel_url: '${ssrpanel_url}'|"  ./docker-compose.yml
     sed -i "s|key:.*|key: '${ssrpanel_key}'|"  ./docker-compose.yml
     sed -i "s|speedtest:.*|speedtest: ${ssrpanel_speedtest}|"  ./docker-compose.yml
     sed -i "s|api_port:.*|api_port: ${v2ray_api_port}|" ./docker-compose.yml
     sed -i "s|downWithPanel:.*|downWithPanel: ${v2ray_downWithPanel}|" ./docker-compose.yml
+    sed -i "s|usemysql:.*|usemysql: ${v2ray_usemysql}|" ./docker-compose.yml
+    sed -i "s|PANELTYPE:.*|PANELTYPE: ${v2ray_paneltype}|" ./docker-compose.yml
+    sed -i "s|MYSQLHOST:.*|MYSQLHOST: ${v2ray_mysqlhost}|" ./docker-compose.yml
+    sed -i "s|MYSQLPORT:.*|MYSQLPORT: ${v2ray_mysqlport}|" ./docker-compose.yml
+    sed -i "s|MYSQLUSR:.*|MYSQLUSR: ${v2ray_myqluser}|" ./docker-compose.yml
+    sed -i "s|MYSQLPASSWD:.*|MYSQLPASSWD: ${v2ray_mysqlpassword}|" ./docker-compose.yml
+    sed -i "s|MYSQLDBNAME:.*|MYSQLDBNAME: ${v2ray_mysqldbname}|" ./docker-compose.yml
 }
 
 
@@ -249,15 +323,22 @@ config_caddy_docker(){
     cd ${cur_dir}
     echo "install curl"
     install_dependencies
-    curl -L https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/master/Docker/Caddy_V2ray/Caddyfile >  Caddyfile
+    curl -L https://raw.githubusercontent.com/rico93/pay-v2ray-sspanel-v3-mod_Uim-plugin/master/Docker/Caddy_V2ray/Caddyfile >  Caddyfile
     echo "Writing docker-compose.yml"
-    curl -L https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/master/Docker/Caddy_V2ray/docker-compose.yml > docker-compose.yml
+    curl -L https://raw.githubusercontent.com/rico93/pay-v2ray-sspanel-v3-mod_Uim-plugin/master/Docker/Caddy_V2ray/docker-compose.yml > docker-compose.yml
     sed -i "s|node_id:.*|node_id: ${ssrpanel_node_id}|"  ./docker-compose.yml
     sed -i "s|sspanel_url:.*|sspanel_url: '${ssrpanel_url}'|"  ./docker-compose.yml
     sed -i "s|key:.*|key: '${ssrpanel_key}'|"  ./docker-compose.yml
     sed -i "s|speedtest:.*|speedtest: ${ssrpanel_speedtest}|"  ./docker-compose.yml
     sed -i "s|api_port:.*|api_port: ${v2ray_api_port}|" ./docker-compose.yml
     sed -i "s|downWithPanel:.*|downWithPanel: ${v2ray_downWithPanel}|" ./docker-compose.yml
+    sed -i "s|usemysql:.*|usemysql: ${v2ray_usemysql}|" ./docker-compose.yml
+    sed -i "s|PANELTYPE:.*|PANELTYPE: ${v2ray_paneltype}|" ./docker-compose.yml
+    sed -i "s|MYSQLHOST:.*|MYSQLHOST: ${v2ray_mysqlhost}|" ./docker-compose.yml
+    sed -i "s|MYSQLPORT:.*|MYSQLPORT: ${v2ray_mysqlport}|" ./docker-compose.yml
+    sed -i "s|MYSQLUSR:.*|MYSQLUSR: ${v2ray_myqluser}|" ./docker-compose.yml
+    sed -i "s|MYSQLPASSWD:.*|MYSQLPASSWD: ${v2ray_mysqlpassword}|" ./docker-compose.yml
+    sed -i "s|MYSQLDBNAME:.*|MYSQLDBNAME: ${v2ray_mysqldbname}|" ./docker-compose.yml
     sed -i "s|V2RAY_DOMAIN=xxxx.com|V2RAY_DOMAIN=${v2ray_domain}|"  ./docker-compose.yml
     sed -i "s|V2RAY_PATH=/v2ray|V2RAY_PATH=${v2ray_path}|"  ./docker-compose.yml
     sed -i "s|V2RAY_EMAIL=xxxx@outlook.com|V2RAY_EMAIL=${v2ray_email}|"  ./docker-compose.yml
@@ -304,6 +385,13 @@ config_caddy_docker_cloudflare(){
     sed -i "s|speedtest:.*|speedtest: ${ssrpanel_speedtest}|"  ./docker-compose.yml
     sed -i "s|api_port:.*|api_port: ${v2ray_api_port}|" ./docker-compose.yml
     sed -i "s|downWithPanel:.*|downWithPanel: ${v2ray_downWithPanel}|" ./docker-compose.yml
+    sed -i "s|usemysql:.*|usemysql: ${v2ray_usemysql}|" ./docker-compose.yml
+    sed -i "s|PANELTYPE:.*|PANELTYPE: ${v2ray_paneltype}|" ./docker-compose.yml
+    sed -i "s|MYSQLHOST:.*|MYSQLHOST: ${v2ray_mysqlhost}|" ./docker-compose.yml
+    sed -i "s|MYSQLPORT:.*|MYSQLPORT: ${v2ray_mysqlport}|" ./docker-compose.yml
+    sed -i "s|MYSQLUSR:.*|MYSQLUSR: ${v2ray_myqluser}|" ./docker-compose.yml
+    sed -i "s|MYSQLPASSWD:.*|MYSQLPASSWD: ${v2ray_mysqlpassword}|" ./docker-compose.yml
+    sed -i "s|MYSQLDBNAME:.*|MYSQLDBNAME: ${v2ray_mysqldbname}|" ./docker-compose.yml
     sed -i "s|V2RAY_DOMAIN=xxxx.com|V2RAY_DOMAIN=${v2ray_domain}|"  ./docker-compose.yml
     sed -i "s|V2RAY_PATH=/v2ray|V2RAY_PATH=${v2ray_path}|"  ./docker-compose.yml
     sed -i "s|V2RAY_EMAIL=xxxx@outlook.com|V2RAY_EMAIL=${v2ray_email}|"  ./docker-compose.yml
@@ -328,6 +416,7 @@ install_docker(){
     echo "Start Docker "
     service docker start
     echo "Start Docker-Compose "
+    docker-compose pull
     docker-compose up -d
     echo
     echo -e "Congratulations, V2ray server install completed!"
@@ -446,6 +535,7 @@ update_config_v2ray(){
     esac
 
     echo "Start Service"
+    docker-compose pull
     docker-compose up -d
 
 }

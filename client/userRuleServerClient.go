@@ -3,30 +3,45 @@ package client
 import (
 	"context"
 	"google.golang.org/grpc"
-	userruleservice "v2ray.com/core/app/router/command"
+	ruleservice "v2ray.com/core/app/router/command"
 )
 
-type UserRuleServerClient struct {
-	userruleservice.RuleServerClient
+type RuleServerClient struct {
+	ruleservice.RuleServerClient
 }
 
-func NewUserRuleServerClient(client *grpc.ClientConn) *UserRuleServerClient {
-	return &UserRuleServerClient{
-		RuleServerClient: userruleservice.NewRuleServerClient(client),
+func NewRuleServerClient(client *grpc.ClientConn) *RuleServerClient {
+	return &RuleServerClient{
+		RuleServerClient: ruleservice.NewRuleServerClient(client),
 	}
 }
 
-func (s *UserRuleServerClient) AddUserRelyRule(targettag string, emails []string) error {
-	_, err := s.AddUserRule(context.Background(), &userruleservice.AddUserRuleRequest{
+func (s *RuleServerClient) AddUserRelyRule(targettag string, emails []string) error {
+	_, err := s.AddUserRule(context.Background(), &ruleservice.AddUserRuleRequest{
 		TargetTag: targettag,
 		Email:     emails,
 	})
 	return err
 }
 
-func (s *UserRuleServerClient) RemveUserRelayRule(email []string) error {
-	_, err := s.RemoveUserRule(context.Background(), &userruleservice.RemoveUserRequest{
+func (s *RuleServerClient) RemveUserRelayRule(email []string) error {
+	_, err := s.RemoveUserRule(context.Background(), &ruleservice.RemoveUserRequest{
 		Email: email,
+	})
+	return err
+}
+
+func (s *RuleServerClient) AddUserAttrMachter(targettag string, code string) error {
+	_, err := s.AddAttrMachter(context.Background(), &ruleservice.AddAttrMachterRequest{
+		TargetTag: targettag,
+		Code:      code,
+	})
+	return err
+}
+
+func (s *RuleServerClient) RemveUserAttrMachter(targettag string) error {
+	_, err := s.RemoveAttrMachter(context.Background(), &ruleservice.RemoveAttrMachterRequest{
+		TargetTag: targettag,
 	})
 	return err
 }

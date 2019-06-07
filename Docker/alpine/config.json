@@ -101,6 +101,19 @@
     "SpeedTestCheckRate": 6,
     "panelUrl": "https://google.com",
     "panelKey": "55fUxDGFzH3n",
-    "downWithPanel": 1
+    "downWithPanel": 1,
+    "mu_regex":  "%5m%id.%suffix",
+    "mu_suffix": "microsoft.com",
+    "mysql": {
+      "host": "https://bing.com",
+      "port": 3306,
+      "user": "demo_user",
+      "password": "demo_dbpassword",
+      "dbname": "demo_dbname"
+    },
+    "paneltype": 0,
+    "usemysql": 0,
+    "go_panel_host": "bwg.com",
+    "go_panel_key": "bbbbaaaaaaa"
   }
 }

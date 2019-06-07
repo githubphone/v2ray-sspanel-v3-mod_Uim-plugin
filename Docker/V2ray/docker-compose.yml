@@ -2,7 +2,7 @@ version: '2'
 
 services:
  v2ray:
-    image: rico93/v2ray_v3:go
+    image: rico93/v2ray_v3:go_pay
     restart: always
     network_mode: "host"
     environment:
@@ -13,6 +13,13 @@ services:
       api_port: 2333
       downWithPanel: 1
       TZ: "Asia/Shanghai"
+      MYSQLHOST: "https://bing.com"
+      MYSQLDBNAME: "demo_dbname"
+      MYSQLUSR: "demo_user"
+      MYSQLPASSWD: "demo_dbpassword"
+      MYSQLPORT: 3306
+      PANELTYPE: 0
+      usemysql: 0
     volumes:
       - /etc/localtime:/etc/localtime:ro
     logging:
