@@ -3,8 +3,8 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/model"
-	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/utility"
+	"github.com/githubphone/v2ray-sspanel-v3-mod_Uim-plugin/model"
+	"github.com/githubphone/v2ray-sspanel-v3-mod_Uim-plugin/utility"
 	"google.golang.org/grpc"
 	"strings"
 	"v2ray.com/core"
@@ -192,7 +192,7 @@ func (h *HandlerServiceClient) AddVmessInbound(port uint16, address string, stre
 					{
 						Level: 0,
 						Rate:  0,
-						Email: "rico93@xxx.com",
+						Email: "githubphone@xxx.com",
 						Account: serial.ToTypedMessage(&vmess.Account{
 							Id:      protocol.NewID(uuid.New()).String(),
 							AlterId: 2,
@@ -262,7 +262,7 @@ func (h *HandlerServiceClient) AddMTInbound(port uint16, address string, streams
 				User: []*protocol.User{
 					{
 						Level: 0,
-						Email: "rico93@xxx.com",
+						Email: "githubphone@xxx.com",
 						Rate:  0,
 						Account: serial.ToTypedMessage(&mtproto.Account{
 							Secret: utility.MD5(utility.GetRandomString(16)),
@@ -310,9 +310,9 @@ func (h *HandlerServiceClient) AddDokodemoInbound(port uint16, address string, s
 					{
 						Level: 0,
 						Rate:  0,
-						Email: "rico93@xxx.com",
+						Email: "githubphone@xxx.com",
 						Account: serial.ToTypedMessage(&dokodemo.Account{
-							Mu_Host: "rico",
+							Mu_Host: "githubphone",
 						}),
 					},
 				},

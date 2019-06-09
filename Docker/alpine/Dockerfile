@@ -1,12 +1,12 @@
 FROM ubuntu:latest as builder
 
-LABEL maintainer="Rico <rico93@outlook.com>"
+LABEL maintainer="Rico <sifangdazhai@gmail.com>"
 
 ENV v2ray_version=4.18.4
 
 RUN apt-get update
 RUN apt-get install curl -y
-RUN curl -L -o /tmp/go.sh https://raw.githubusercontent.com/rico93/pay-v2ray-sspanel-v3-mod_Uim-plugin/master/install-release.sh
+RUN curl -L -o /tmp/go.sh https://raw.githubusercontent.com/githubphone/pay-v2ray-sspanel-v3-mod_Uim-plugin/master/install-release.sh
 RUN chmod +x /tmp/go.sh
 RUN /tmp/go.sh --version ${v2ray_version} --panelurl https://google.com --panelkey 55fUxDGFzH3n --nodeid 123456 --downwithpanel 1 --mysqlhost https://bing.com --mysqldbname demo_dbname --mysqluser demo_user --mysqlpasswd demo_dbpassword --mysqlport 3306 --speedtestrate 6 --paneltype 0 --usemysql 0
 

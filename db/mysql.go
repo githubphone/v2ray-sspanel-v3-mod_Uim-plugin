@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/config"
+	"github.com/githubphone/v2ray-sspanel-v3-mod_Uim-plugin/config"
 	"os"
 	"time"
 	"v2ray.com/core/common/errors"

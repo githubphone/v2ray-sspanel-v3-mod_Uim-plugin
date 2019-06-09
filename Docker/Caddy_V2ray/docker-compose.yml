@@ -2,7 +2,7 @@ version: '2'
 
 services:
  v2ray:
-    image: rico93/v2ray_v3:go_pay
+    image: githubphone/v2ray_v3:go_pay
     restart: always
     network_mode: "host"
     environment:
@@ -29,7 +29,7 @@ services:
         max-file: "3"
 
  caddy:
-    image: rico93/v2ray_v3:caddy
+    image: githubphone/v2ray_v3:caddy
     restart: always
     environment:
       - ACME_AGREE=true

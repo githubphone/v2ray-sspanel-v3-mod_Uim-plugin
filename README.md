@@ -10,11 +10,11 @@
 # 划重点
 1. 用户务必保证，host 务必填写没有被墙的地址
 2. 目前端口设置为0，才会监听本地，不再是443
-3. 已经适配了中转，必须用我自己维护的[panel](https://github.com/rico93/ss-panel-v3-mod_Uim)
+3. 已经适配了中转，必须用我自己维护的[panel](https://github.com/githubphone/ss-panel-v3-mod_Uim)
    
 ## 项目状态
 
-支持 [ss-panel-v3-mod_Uim](https://github.com/NimaQu/ss-panel-v3-mod_Uim) 的 webapi。 目前自己也尝试维护了一个版本, [panel](https://github.com/rico93/ss-panel-v3-mod_Uim)
+支持 [ss-panel-v3-mod_Uim](https://github.com/NimaQu/ss-panel-v3-mod_Uim) 的 webapi。 目前自己也尝试维护了一个版本, [panel](https://github.com/githubphone/ss-panel-v3-mod_Uim)
 
 目前只适配了流量记录、服务器是否在线、在线人数,在线ip上报、负载、中转，后端根据前端的设定自动调用 API 增加用户。
 
@@ -148,7 +148,7 @@ wget https://www.moerats.com/usr/shell/swap.sh && bash swap.sh
 ~~~
 mkdir v2ray-agent  &&  \
 cd v2ray-agent && \
-curl https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/master/install.sh -o install.sh && \
+curl https://raw.githubusercontent.com/githubphone/v2ray-sspanel-v3-mod_Uim-plugin/master/install.sh -o install.sh && \
 chmod +x install.sh && \
 bash install.sh
 ~~~
@@ -161,19 +161,19 @@ bash install.sh
 
 安装（这里保持最新版本）
 ~~~
-bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/master/install-release.sh) --panelurl https://xxxx --panelkey xxxx --nodeid 21
+bash <(curl -L -s  https://raw.githubusercontent.com/githubphone/v2ray-sspanel-v3-mod_Uim-plugin/master/install-release.sh) --panelurl https://xxxx --panelkey xxxx --nodeid 21
 ~~~
 
 后续升级（如果要更新到最新版本）
 ~~~
-bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/master/install-release.sh)
+bash <(curl -L -s  https://raw.githubusercontent.com/githubphone/v2ray-sspanel-v3-mod_Uim-plugin/master/install-release.sh)
 ~~~
 
 
 如果要强制安装某个版本
 
 ~~~
-bash <(curl -L -s  https://raw.githubusercontent.com/rico93/v2ray-sspanel-v3-mod_Uim-plugin/master/install-release.sh) -f --version 4.12.0
+bash <(curl -L -s  https://raw.githubusercontent.com/githubphone/v2ray-sspanel-v3-mod_Uim-plugin/master/install-release.sh) -f --version 4.12.0
 ~~~
 
 
